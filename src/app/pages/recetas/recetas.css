@@ -1,0 +1,14 @@
+.item-receta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background-color: var(--color-surface-alt);
+  border-radius: var(--radius-btn);
+  margin-bottom: 12px;
+}
+.item-receta:last-child {
+  margin-bottom: 0;
+}

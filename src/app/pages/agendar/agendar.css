@@ -1,0 +1,97 @@
+.selector-mascotas {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.mascota-item {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.mascota-item .avatar {
+  width: 64px;
+  height: 64px;
+  border: 2px solid transparent;
+  padding: 2px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+.mascota-item.activo .avatar {
+  border-color: var(--color-primary);
+}
+.mascota-item span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.mascota-item.activo span {
+  color: var(--color-primary);
+}
+.mascota-nueva .avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--color-border);
+  color: var(--color-text-secondary);
+}
+.calendario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.calendario-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+.calendario-grid .dia-nombre {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.calendario-grid .dia {
+  padding: 8px 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.calendario-grid .dia.fuera-de-mes {
+  opacity: 0.3;
+}
+.calendario-grid .dia.seleccionado {
+  background-color: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+}
+.horarios-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.horario-btn {
+  padding: 10px 4px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.horario-btn:hover {
+  background-color: var(--color-surface-alt);
+}
+.horario-btn.ocupado {
+  opacity: 0.4;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+.horario-btn.seleccionado {
+  border: 2px solid var(--color-primary);
+  background-color: var(--color-primary-light);
+  font-weight: 700;
+}

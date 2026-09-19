@@ -1,0 +1,125 @@
+<main class="contenedor main-content">
+<section style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:end; gap:16px;">
+<div>
+<h1 class="titulo-pagina">Historial m&eacute;dico</h1>
+<p class="subtitulo-pagina">Consulta el expediente cl&iacute;nico y registros de vacunaci&oacute;n.</p>
+</div>
+<div class="buscador" style="width:100%; max-width:320px;">
+<span class="icono"> &#x1F50D; </span>
+<input type="text" placeholder="Buscar por paciente o propietario...">
+</div>
+</section>
+<!-- Tarjeta con datos del paciente -->
+<section class="card" style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
+<div class="avatar" style="width:88px; height:88px; border:3px solid var(--color-primary-light);">
+<img src="fotos/colita.svg" alt="Colita">
+</div>
+<div style="flex:1; min-width:220px;">
+<div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+<h2 style="margin:0;">Colita</h2>
+<span class="badge badge-ok">Paciente activo</span>
+</div>
+<div class="grid-2" style="max-width:420px;">
+<div>
+<p class="texto-mini">Especie / raza</p>
+<p style="margin:0; font-weight:600;">Canino, mestiza</p>
+</div>
+<div>
+<p class="texto-mini">Edad</p>
+<p style="margin:0; font-weight:600;">3 a&ntilde;os</p>
+</div>
+<div>
+<p class="texto-mini">Sexo</p>
+<p style="margin:0; font-weight:600;">Hembra</p>
+</div>
+<div>
+<p class="texto-mini">Propietario</p>
+<p style="margin:0; font-weight:600;">Carlos Mendoza</p>
+</div>
+</div>
+</div>
+<button class="btn btn-primary">
+<span class="icono" style="font-size:18px;"> &#x1F50D; </span>Nueva consulta</button>
+</section>
+<!-- Registro de vacunacion -->
+<section class="card">
+<div class="card-titulo" style="justify-content:space-between;">
+<div style="display:flex; align-items:center; gap:8px;">
+<div class="icono-circulo">
+<span class="icono" style="font-size:18px;"> 馃拤 </span>
+</div>
+<h3>Registro de vacunaci&oacute;n</h3>
+</div>
+<a href="#" style="color:var(--color-primary); font-weight:600; font-size:0.85rem;">+ A&ntilde;adir</a>
+</div>
+<div class="tabla-wrap">
+<table>
+<thead>
+<tr>
+<th>Vacuna</th>
+<th>Fecha aplicaci&oacute;n</th>
+<th>Pr&oacute;xima dosis</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="font-weight:600;">S&eacute;xtuple canina</td>
+<td>12 Oct 2023</td>
+<td>12 Oct 2024</td>
+<td>
+<span class="badge badge-ok">Al d&iacute;a</span>
+</td>
+</tr>
+<tr>
+<td style="font-weight:600;">Antirr&aacute;bica</td>
+<td>05 Sep 2023</td>
+<td>05 Sep 2024</td>
+<td>
+<span class="badge badge-ok">Al d&iacute;a</span>
+</td>
+</tr>
+<tr>
+<td style="font-weight:600;">Bordetella</td>
+<td>10 May 2023</td>
+<td style="color:var(--color-error); font-weight:600;">10 Nov 2023</td>
+<td>
+<span class="badge badge-vencida">Vencida</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Visitas recientes -->
+<section class="card">
+<div class="card-titulo">
+<div class="icono-circulo">
+<span class="icono" style="font-size:18px;"> 馃搵 </span>
+</div>
+<h3>Visitas recientes</h3>
+</div>
+<div class="timeline">
+<div class="timeline-item">
+<div style="display:flex; flex-wrap:wrap; gap:16px;">
+<div style="min-width:100px;">
+<p style="margin:0; color:var(--color-primary); font-weight:700; font-size:0.85rem;">14 Mar 2024</p>
+<p class="texto-secundario" style="margin:0; font-size:0.8rem;">10:30 AM</p>
+</div>
+<div style="flex:1; min-width:220px; border:1px solid var(--color-border); border-radius:var(--radius-btn); padding:12px;">
+<h4 style="margin:0 0 6px;">Revisi&oacute;n por tos cr&oacute;nica</h4>
+<p class="texto-secundario" style="margin:0 0 8px; font-size:0.85rem;"> Paciente presenta tos seca desde hace 3 d&iacute;as. Se realiza estudio radiol&oacute;gico de t&oacute;rax (rayos X adjuntos). <strong style="color:var(--color-navy); display:block; margin-top:4px;">Diagn&oacute;stico:</strong> Traqueobronquitis leve. </p>
+<div style="display:flex; align-items:center; gap:8px; padding-top:8px; border-top:1px solid var(--color-border);">
+<div class="avatar" style="width:24px; height:24px;">
+<img src="fotos/dr-alejandro.svg" alt="Dr. Alejandro G&oacute;mez">
+</div>
+<p style="margin:0; font-size:0.8rem;" class="texto-secundario">Dr. Alejandro G&oacute;mez</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<button class="btn btn-secundario btn-bloque" style="margin-top:16px;">Cargar m谩s historial <span class="icono" style="font-size:18px;"> 鈻?</span>
+</button>
+</section>
+</main>

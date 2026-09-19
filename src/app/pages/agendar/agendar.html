@@ -1,0 +1,122 @@
+<main class="contenedor main-content">
+<section>
+<h1 class="titulo-pagina">Agendar cita</h1>
+<p class="subtitulo-pagina">Selecciona tu mascota y el horario de preferencia.</p>
+</section>
+<section>
+<p class="texto-mini">Selecciona paciente</p>
+<div class="selector-mascotas">
+<div class="mascota-item activo">
+<div class="avatar">
+<img src="fotos/colita.svg" alt="Colita">
+</div>
+<span>Colita</span>
+</div>
+<div class="mascota-item">
+<div class="avatar">
+<img src="fotos/luna.svg" alt="Luna">
+</div>
+<span>Luna</span>
+</div>
+<div class="mascota-item">
+<div class="avatar">
+<img src="fotos/simba.svg" alt="Simba">
+</div>
+<span>Simba</span>
+</div>
+<div class="mascota-item mascota-nueva">
+<div class="avatar">
+<span class="icono"> ➕ </span>
+</div>
+<span>Nuevo</span>
+</div>
+</div>
+</section>
+<section style="max-width:400px;">
+<p class="texto-mini">Servicio</p>
+<div class="campo" style="margin-bottom:0;">
+<select>
+<option>Consulta general</option>
+<option>Vacunación</option>
+<option>Cirugía menor</option>
+<option>Peluquería</option>
+</select>
+</div>
+</section>
+<section class="grid-8-4">
+<div class="card">
+<div class="calendario-header">
+<p class="texto-mini" style="margin:0;">Fecha</p>
+<div style="display:flex; align-items:center; gap:8px;">
+<span class="icono" style="cursor:pointer;">
+<</span>
+<strong>Octubre 2023</strong>
+<span class="icono" style="cursor:pointer;">>
+</span>
+</div>
+</div>
+<div class="calendario-grid">
+<div class="dia-nombre">Lun</div>
+<div class="dia-nombre">Mar</div>
+<div class="dia-nombre">Mié</div>
+<div class="dia-nombre">Jue</div>
+<div class="dia-nombre">Vie</div>
+<div class="dia-nombre">Sáb</div>
+<div class="dia-nombre">Dom</div>
+<div class="dia fuera-de-mes">25</div>
+<div class="dia fuera-de-mes">26</div>
+<div class="dia fuera-de-mes">27</div>
+<div class="dia fuera-de-mes">28</div>
+<div class="dia fuera-de-mes">29</div>
+<div class="dia fuera-de-mes">30</div>
+<div class="dia">1</div>
+<div class="dia">2</div>
+<div class="dia">3</div>
+<div class="dia">4</div>
+<div class="dia">5</div>
+<div class="dia">6</div>
+<div class="dia">7</div>
+<div class="dia">8</div>
+<div class="dia">9</div>
+<div class="dia">10</div>
+<div class="dia">11</div>
+<div class="dia seleccionado">12</div>
+<div class="dia">13</div>
+<div class="dia">14</div>
+<div class="dia">15</div>
+<div class="dia">16</div>
+<div class="dia">17</div>
+<div class="dia">18</div>
+<div class="dia">19</div>
+<div class="dia">20</div>
+<div class="dia">21</div>
+<div class="dia">22</div>
+<div class="dia">23</div>
+<div class="dia">24</div>
+<div class="dia">25</div>
+<div class="dia">26</div>
+<div class="dia">27</div>
+<div class="dia">28</div>
+<div class="dia">29</div>
+<div class="dia">30</div>
+<div class="dia">31</div>
+</div>
+</div>
+<div class="card">
+<p class="texto-mini">Horario disponible</p>
+<div class="horarios-grid">
+<button class="horario-btn">09:00</button>
+<button class="horario-btn">09:30</button>
+<button class="horario-btn ocupado" disabled>10:00</button>
+<button class="horario-btn seleccionado">10:30</button>
+<button class="horario-btn">11:00</button>
+<button class="horario-btn ocupado" disabled>11:30</button>
+<button class="horario-btn">12:00</button>
+<button class="horario-btn">12:30</button>
+</div>
+</div>
+</section>
+<section style="display:flex; justify-content:flex-end;">
+<button class="btn btn-primary btn-bloque" style="max-width:260px;">Confirmar cita</button>
+</section>
+</main>

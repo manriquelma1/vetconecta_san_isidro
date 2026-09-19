@@ -1,0 +1,80 @@
+<main class="contenedor main-content">
+<!-- Bienvenida -->
+<section style="display:flex; align-items:center; gap:16px;">
+<div class="avatar" style="width:64px; height:64px; border:2px solid var(--color-primary-light);">
+<img src="fotos/julian.svg" alt="Foto de perfil de Julián Campos">
+</div>
+<div>
+<h1 style="margin:0; font-size:1.4rem;">¡Hola, Julián!</h1>
+<p class="texto-secundario" style="margin:0;">Resumen de hoy</p>
+</div>
+</section>
+<!-- Estadisticas rapidas -->
+<section class="grid-3">
+<div class="card" style="background-color: var(--color-info-bg);">
+<p class="texto-mini" style="color:var(--color-info-text);">Citas hoy</p>
+<p style="font-size:2rem; font-weight:700; margin:4px 0 0;">1</p>
+</div>
+<div class="card" style="background-color: var(--color-error-bg);">
+<p class="texto-mini" style="color:var(--color-error);">Hospitalizados</p>
+<p style="font-size:2rem; font-weight:700; margin:4px 0 0;">1</p>
+</div>
+<div class="card" style="background-color: var(--color-warning-bg);">
+<p class="texto-mini" style="color:var(--color-warning-text);">Próxima vacuna</p>
+<p style="font-size:1.1rem; font-weight:700; margin:4px 0 0;">Rabia</p>
+<p class="texto-secundario" style="margin:0;">15 Nov</p>
+</div>
+</section>
+<!-- Accesos rapidos -->
+<section class="grid-3">
+<a routerLink="/agendar" class="card" style="text-align:center; text-decoration:none;">
+<div class="icono-circulo" style="margin:0 auto 8px; width:48px; height:48px; background-color:var(--color-primary-light); color:var(--color-primary);">
+<span class="icono"> ➕ </span>
+</div>
+<span style="font-size:0.85rem; font-weight:600;">Nueva cita</span>
+</a>
+<a routerLink="/internamiento" class="card" style="text-align:center; text-decoration:none;">
+<div class="icono-circulo" style="margin:0 auto 8px; width:48px; height:48px; background-color:var(--color-primary-light); color:var(--color-primary);">
+<span class="icono"> ❤ </span>
+</div>
+<span style="font-size:0.85rem; font-weight:600;">Registrar signos</span>
+</a>
+<a routerLink="/recetas" class="card" style="text-align:center; text-decoration:none;">
+<div class="icono-circulo" style="margin:0 auto 8px; width:48px; height:48px; background-color:var(--color-primary-light); color:var(--color-primary);">
+<span class="icono"> 💊 </span>
+</div>
+<span style="font-size:0.85rem; font-weight:600;">Emitir receta</span>
+</a>
+</section>
+<!-- Proximas citas -->
+<section>
+<div style="display:flex; justify-content:space-between; align-items:end; margin-bottom:8px;">
+<h2 style="margin:0; font-size:1.1rem;">Próximas citas</h2>
+<a routerLink="/agendar" style="color:var(--color-primary); font-weight:600; font-size:0.85rem;">Ver todas</a>
+</div>
+<div class="card" style="padding:0;">
+<div class="lista-filas">
+<div style="padding:12px 16px;">
+<div class="icono-circulo" style="background-color:var(--color-surface-alt); color:var(--color-text-secondary);">
+<span class="icono"> 🐾 </span>
+</div>
+<div style="flex:1;">
+<p style="margin:0; font-weight:600;">Colita</p>
+<p class="texto-secundario" style="margin:0; font-size:0.85rem;">Mestiza</p>
+</div>
+<span class="badge badge-ok">10:00 AM</span>
+</div>
+<div style="padding:12px 16px;">
+<div class="icono-circulo" style="background-color:var(--color-surface-alt); color:var(--color-text-secondary);">
+<span class="icono"> 🐾 </span>
+</div>
+<div style="flex:1;">
+<p style="margin:0; font-weight:600;">Luna</p>
+<p class="texto-secundario" style="margin:0; font-size:0.85rem;">Gato</p>
+</div>
+<span class="badge badge-ok">11:30 AM</span>
+</div>
+</div>
+</div>
+</section>
+</main>
