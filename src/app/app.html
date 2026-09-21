@@ -33,6 +33,13 @@ Clinic
 Pharmacy
 </a>
 
+@if (esPersonal()) {
+  <a routerLink="/inventario" routerLinkActive="activo">
+    <span class="icono">📦</span>
+    Inventario
+  </a>
+}
+
 <a routerLink="/historial" routerLinkActive="activo">
 <span class="icono">🕓</span>
 History
@@ -113,6 +120,13 @@ Clinic
 <span class="icono">💊</span>
 Pharmacy
 </a>
+
+@if (esPersonal()) {
+  <a routerLink="/inventario" routerLinkActive="activo">
+    <span class="icono">📦</span>
+    Inventario
+  </a>
+}
 
 <a routerLink="/historial" routerLinkActive="activo">
 <span class="icono">🕓</span>

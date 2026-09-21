@@ -12,7 +12,7 @@ import { Recetas } from './pages/recetas/recetas';
 import { Recordatorios } from './pages/recordatorios/recordatorios';
 import { RegistroAtencion } from './pages/registro-atencion/registro-atencion';
 import { GestionCitas } from './pages/gestion-citas/gestion-citas';
-
+import { Inventario } from './pages/inventario/inventario';
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'login', component: Login, canActivate: [invitadoGuard] },
@@ -25,5 +25,6 @@ export const routes: Routes = [
   { path: 'recetas', component: Recetas, canActivate: [sesionGuard] },
   { path: 'recordatorios', component: Recordatorios, canActivate: [propietarioGuard] },
   { path: 'registro-atencion', component: RegistroAtencion, canActivate: [sesionGuard] },
+  { path: 'inventario', component: Inventario, canActivate: [personalGuard] },
   { path: '**', redirectTo: 'dashboard' }
 ];

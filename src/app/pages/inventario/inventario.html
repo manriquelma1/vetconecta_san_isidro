@@ -1,0 +1,124 @@
+<main class="contenedor main-content">
+
+  <section class="encabezado-inventario">
+    <div>
+      <h1>Inventario de Farmacia y Pet Shop</h1>
+      <p class="texto-secundario">
+        Consulta productos, revisa el stock disponible y registra ventas.
+      </p>
+    </div>
+  </section>
+
+  <section class="card buscador-inventario">
+    <h2>Buscar producto</h2>
+
+    <div class="grupo-busqueda">
+      <input
+        type="text"
+        [(ngModel)]="terminoBusqueda"
+        placeholder="Ej. NexGard, Royal Canin..."
+        (keyup.enter)="buscar()"
+      />
+
+      <button class="btn btn-primary" type="button" (click)="buscar()">
+        Buscar
+      </button>
+
+      <button class="btn btn-secondary" type="button" (click)="limpiarBusqueda()">
+        Limpiar
+      </button>
+    </div>
+  </section>
+
+  @if (mensaje) {
+    <div
+      class="mensaje-venta"
+      [class.mensaje-error]="mensajeError"
+      [class.mensaje-exito]="!mensajeError"
+    >
+      {{ mensaje }}
+    </div>
+  }
+
+  <section class="card">
+    <div class="titulo-listado">
+      <div>
+        <h2>Productos disponibles</h2>
+        <p class="texto-secundario">
+          {{ productos.length }} producto(s) encontrado(s)
+        </p>
+      </div>
+    </div>
+
+    @if (productos.length > 0) {
+
+      <div class="tabla-contenedor">
+        <table class="tabla-inventario">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th>Precio</th>
+              <th>Stock</th>
+              <th>Estado</th>
+              <th>Venta</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (producto of productos; track producto.id) {
+              <tr>
+                <td>
+                  <strong>{{ producto.nombre }}</strong>
+                </td>
+
+                <td>
+                  {{ producto.categoria }}
+                </td>
+
+                <td>
+                  S/ {{ producto.precio.toFixed(2) }}
+                </td>
+
+                <td>
+                  {{ producto.stock }} unidades
+                </td>
+
+                <td>
+                  @if (stockBajo(producto)) {
+                    <span class="badge-stock badge-stock-bajo">
+                      Stock bajo
+                    </span>
+                  } @else {
+                    <span class="badge-stock badge-stock-ok">
+                      Disponible
+                    </span>
+                  }
+                </td>
+
+                <td>
+                  <button
+                    class="btn btn-primary btn-venta"
+                    type="button"
+                    [disabled]="producto.stock === 0"
+                    (click)="vender(producto)"
+                  >
+                    Registrar venta
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    } @else {
+
+      <div class="sin-resultados">
+        <p>No se encontraron productos con ese nombre.</p>
+      </div>
+
+    }
+  </section>
+
+</main>

@@ -1,0 +1,149 @@
+.encabezado-inventario {
+  margin-bottom: 24px;
+}
+
+.encabezado-inventario h1 {
+  margin-bottom: 6px;
+}
+
+.buscador-inventario {
+  margin-bottom: 20px;
+}
+
+.buscador-inventario h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.grupo-busqueda {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.grupo-busqueda input {
+  flex: 1;
+  min-width: 240px;
+  padding: 11px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.grupo-busqueda input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.titulo-listado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.titulo-listado h2 {
+  margin: 0 0 4px;
+}
+
+.titulo-listado p {
+  margin: 0;
+}
+
+.tabla-contenedor {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabla-inventario {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-inventario th,
+.tabla-inventario td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabla-inventario th {
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: var(--color-surface-alt);
+}
+
+.tabla-inventario tbody tr:hover {
+  background-color: var(--color-surface-alt);
+}
+
+.badge-stock {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-stock-ok {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge-stock-bajo {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.mensaje-venta {
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.mensaje-exito {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.mensaje-error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.btn-venta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sin-resultados {
+  padding: 30px;
+  text-align: center;
+}
+
+.sin-resultados p {
+  margin: 0;
+  color: #6b7280;
+}
+
+@media (max-width: 768px) {
+  .grupo-busqueda {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .grupo-busqueda input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .tabla-inventario th,
+  .tabla-inventario td {
+    padding: 10px 8px;
+    white-space: nowrap;
+  }
+}
