@@ -1,6 +1,10 @@
 export interface Mascota {
   id: string;
   nombre: string;
-  /** Ruta al SVG de `public/fotos`. Las mascotas creadas por el usuario no tienen foto. */
+  especie: string;
+  raza: string;
+  edad: number;
+  peso: number;
+  alergias: string;
   foto: string | null;
 }

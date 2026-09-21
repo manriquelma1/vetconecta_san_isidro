@@ -1,75 +1,308 @@
 <main class="contenedor main-content">
-<section class="grid-8-4">
-<div style="display:flex; flex-direction:column; gap:24px;">
-<!-- Cabecera del paciente -->
-<div class="card" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px;">
-<div style="display:flex; align-items:center; gap:16px;">
-<div class="avatar" style="width:64px; height:64px;">
-<img src="fotos/colita.svg" alt="Colita">
-</div>
-<div>
-<h2 style="margin:0;">Colita (Mestiza)</h2>
-<div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-<span class="badge" style="background-color:var(--color-warning-bg); color:var(--color-primary);">Jaula 04</span>
-<span class="texto-secundario" style="font-size:0.85rem;">Ingreso: hoy, 08:30 AM</span>
-</div>
-</div>
-</div>
-<button class="btn btn-primary">
-<span class="icono" style="font-size:18px;"> 📝 </span>Actualizar signos</button>
-</div>
-<!-- Signos vitales -->
-<div>
-<h3 style="margin:0 0 12px; font-size:1.1rem;">Signos vitales</h3>
-<div class="grid-3">
-<div class="card signo-vital">
-<span class="icono" style="color:var(--color-error);"> 🌡 </span>
-<p class="texto-mini" style="margin:0;">Temperatura</p>
-<p class="valor" style="margin:0;">38.5<span style="font-size:1rem; font-weight:400;">°C</span>
+
+<section class="selector-pacientes">
+
+<h1 class="titulo-pagina">Hospitalización</h1>
+
+<p class="subtitulo-pagina">
+Seguimiento de pacientes hospitalizados.
 </p>
+
+<div class="pacientes">
+
+@for (internamiento of internamientos(); track internamiento.id) {
+
+<button
+type="button"
+class="btn"
+[class.btn-primary]="internamiento.id === internamientoSeleccionadoId()"
+[class.btn-secundario]="internamiento.id !== internamientoSeleccionadoId()"
+(click)="seleccionarInternamiento(internamiento.id)"
+>
+{{ internamiento.jaula }}
+</button>
+
+}
+
 </div>
-<div class="card signo-vital">
-<span class="icono" style="color:var(--color-primary);"> ❤ </span>
-<p class="texto-mini" style="margin:0;">Frec. cardíaca</p>
-<p class="valor" style="margin:0;">80<span style="font-size:1rem; font-weight:400;"> lpm</span>
-</p>
-</div>
-<div class="card signo-vital">
-<span class="icono" style="color:var(--color-info-text);"> 💨 </span>
-<p class="texto-mini" style="margin:0;">Frec. respiratoria</p>
-<p class="valor" style="margin:0;">20<span style="font-size:1rem; font-weight:400;"> rpm</span>
-</p>
-</div>
-</div>
-</div>
-</div>
-<!-- Tratamientos de hoy -->
-<aside class="card">
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-<h3 style="margin:0; font-size:1.1rem;">Tratamientos - hoy</h3>
-<span class="icono" style="color:var(--color-primary); cursor:pointer;"> ➕ </span>
-</div>
-<div class="tratamiento-item hecho">
-<input type="checkbox" checked>
-<div>
-<p class="titulo-t" style="margin:0; font-size:0.9rem;">Cefalexina 500mg (IV)</p>
-<p class="texto-secundario" style="margin:0; font-size:0.8rem;">08:00 AM - Dr. Ruiz</p>
-</div>
-</div>
-<div class="tratamiento-item">
-<input type="checkbox">
-<div>
-<p style="margin:0; font-size:0.9rem;">Meloxicam 2mg (SC)</p>
-<p class="texto-secundario" style="margin:0; font-size:0.8rem;">12:00 PM - Pendiente</p>
-</div>
-</div>
-<div class="tratamiento-item">
-<input type="checkbox">
-<div>
-<p style="margin:0; font-size:0.9rem;">Fluidoterapia (RL)</p>
-<p class="texto-secundario" style="margin:0; font-size:0.8rem;">Continua - 50ml/h</p>
-</div>
-</div>
-</aside>
+
 </section>
+
+@if (internamientoSeleccionado(); as internamiento) {
+
+@if (mascotaSeleccionada(); as mascota) {
+
+<section class="grid-8-4">
+
+<div style="display:flex; flex-direction:column; gap:24px;">
+
+<div
+class="card"
+style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px;"
+>
+
+<div style="display:flex; align-items:center; gap:16px;">
+
+<div class="avatar" style="width:64px; height:64px;">
+
+@if (mascota.foto) {
+<img [src]="mascota.foto" [alt]="mascota.nombre">
+} @else {
+<strong>{{ mascota.nombre.charAt(0).toUpperCase() }}</strong>
+}
+
+</div>
+
+<div>
+
+<h2 style="margin:0;">
+{{ mascota.nombre }} ({{ mascota.raza || 'Sin raza' }})
+</h2>
+
+<div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+
+<span
+class="badge"
+style="background-color:var(--color-warning-bg); color:var(--color-primary);"
+>
+{{ internamiento.jaula }}
+</span>
+
+<span
+class="texto-secundario"
+style="font-size:0.85rem;"
+>
+Ingreso: {{ internamiento.fechaIngreso }} - {{ internamiento.horaIngreso }}
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+<button
+type="button"
+class="btn btn-primary"
+(click)="comenzarActualizarSignos()"
+>
+<span class="icono" style="font-size:18px;">📝</span>
+Actualizar signos
+</button>
+
+</div>
+
+@if (mensaje(); as aviso) {
+
+<div
+class="card"
+[class.mensaje-error]="aviso.error"
+[class.mensaje-ok]="!aviso.error"
+>
+{{ aviso.texto }}
+</div>
+
+}
+
+@if (editandoSignos()) {
+
+<div class="card">
+
+<h3>Actualizar signos vitales</h3>
+
+<div class="form-signos">
+
+<label>
+Temperatura °C
+<input
+type="number"
+step="0.1"
+[value]="temperatura()"
+(input)="cambiarTemperatura($event)"
+>
+</label>
+
+<label>
+Frecuencia cardíaca
+<input
+type="number"
+[value]="frecuenciaCardiaca()"
+(input)="cambiarFrecuenciaCardiaca($event)"
+>
+</label>
+
+<label>
+Frecuencia respiratoria
+<input
+type="number"
+[value]="frecuenciaRespiratoria()"
+(input)="cambiarFrecuenciaRespiratoria($event)"
+>
+</label>
+
+</div>
+
+<div class="acciones-signos">
+
+<button
+type="button"
+class="btn btn-secundario"
+(click)="cancelarActualizacion()"
+>
+Cancelar
+</button>
+
+<button
+type="button"
+class="btn btn-primary"
+(click)="guardarSignos()"
+>
+Guardar signos
+</button>
+
+</div>
+
+</div>
+
+}
+
+<div>
+
+<h3 style="margin:0 0 12px; font-size:1.1rem;">
+Signos vitales
+</h3>
+
+<div class="grid-3">
+
+<div class="card signo-vital">
+
+<span
+class="icono"
+style="color:var(--color-error);"
+>
+🌡
+</span>
+
+<p class="texto-mini" style="margin:0;">
+Temperatura
+</p>
+
+<p class="valor" style="margin:0;">
+{{ internamiento.temperatura }}
+<span style="font-size:1rem; font-weight:400;">
+°C
+</span>
+</p>
+
+</div>
+
+<div class="card signo-vital">
+
+<span
+class="icono"
+style="color:var(--color-primary);"
+>
+❤
+</span>
+
+<p class="texto-mini" style="margin:0;">
+Frec. cardíaca
+</p>
+
+<p class="valor" style="margin:0;">
+{{ internamiento.frecuenciaCardiaca }}
+<span style="font-size:1rem; font-weight:400;">
+lpm
+</span>
+</p>
+
+</div>
+
+<div class="card signo-vital">
+
+<span
+class="icono"
+style="color:var(--color-info-text);"
+>
+💨
+</span>
+
+<p class="texto-mini" style="margin:0;">
+Frec. respiratoria
+</p>
+
+<p class="valor" style="margin:0;">
+{{ internamiento.frecuenciaRespiratoria }}
+<span style="font-size:1rem; font-weight:400;">
+rpm
+</span>
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<aside class="card">
+
+<div
+style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"
+>
+
+<h3 style="margin:0; font-size:1.1rem;">
+Tratamientos - hoy
+</h3>
+
+<span class="icono" style="color:var(--color-primary);">
+💊
+</span>
+
+</div>
+
+@for (tratamiento of internamiento.tratamientos; track tratamiento.id) {
+
+<div
+class="tratamiento-item"
+[class.hecho]="tratamiento.realizado"
+>
+
+<input
+type="checkbox"
+[checked]="tratamiento.realizado"
+(change)="cambiarTratamiento(tratamiento.id, $event)"
+>
+
+<div>
+
+<p
+class="titulo-t"
+style="margin:0; font-size:0.9rem;"
+>
+{{ tratamiento.nombre }}
+</p>
+
+<p
+class="texto-secundario"
+style="margin:0; font-size:0.8rem;"
+>
+{{ tratamiento.horario }} - {{ tratamiento.detalle }}
+</p>
+
+</div>
+
+</div>
+
+}
+
+</aside>
+
+</section>
+
+}
+
+}
+
 </main>

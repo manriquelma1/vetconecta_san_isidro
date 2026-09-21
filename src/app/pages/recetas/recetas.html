@@ -1,80 +1,120 @@
 <main class="contenedor main-content">
+
 <section class="buscador">
-<span class="icono"> &#x1F50D; </span>
-<input type="text" placeholder="Buscar medicamentos en farmacia...">
+<span class="icono">🔍</span>
+<input
+type="text"
+placeholder="Buscar por mascota o medicamento..."
+[value]="busqueda()"
+(input)="cambiarBusqueda($event)"
+>
 </section>
-<section class="grid-8-4">
-<!-- Columna principal: receta activa -->
-<div class="card" style="border-left:4px solid var(--color-primary);">
-<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-<div>
-<h2 style="margin:0 0 4px;">Receta activa: Luna</h2>
-<p class="texto-secundario" style="margin:0; font-size:0.85rem;">Dr. Carlos Mendoza 路 Emitida 24 Oct 2023</p>
-</div>
-<span class="badge badge-pendiente">Pendiente</span>
-</div>
-<div class="item-receta">
-<div style="display:flex; gap:12px; align-items:flex-start;">
-<div class="icono-circulo" style="background-color:var(--color-surface); color:var(--color-primary);">
-<span class="icono"> &#x1F50D; </span>
-</div>
-<div>
-<h3 style="margin:0 0 2px; font-size:1rem;">Amoxicilina 250mg</h3>
-<p class="texto-secundario" style="margin:0; font-size:0.85rem;">1 tableta cada 12 horas por 7 d&iacute;as</p>
-<p style="margin:4px 0 0; color:var(--color-primary); font-weight:700; font-size:0.9rem;">S/ 45.00</p>
-</div>
-</div>
-<button class="btn btn-primary">
-<span class="icono" style="font-size:18px;"> 馃洅 </span>Compra r&aacute;pida</button>
-</div>
-<div class="item-receta">
-<div style="display:flex; gap:12px; align-items:flex-start;">
-<div class="icono-circulo" style="background-color:var(--color-surface); color:var(--color-primary);">
-<span class="icono"> 馃拤 </span>
-</div>
-<div>
-<h3 style="margin:0 0 2px; font-size:1rem;">Meloxicam suspensi贸n</h3>
-<p class="texto-secundario" style="margin:0; font-size:0.85rem;">0.5ml cada 24 horas por 3 d&iacute;as</p>
-<p style="margin:4px 0 0; color:var(--color-primary); font-weight:700; font-size:0.9rem;">S/ 32.00</p>
-</div>
-</div>
-<button class="btn btn-primary">
-<span class="icono" style="font-size:18px;"> 馃洅 </span>Compra r&aacute;pida</button>
-</div>
-</div>
-<!-- Columna lateral: historial de pedidos -->
-<div class="card">
-<div class="card-titulo">
-<span class="icono" style="color:var(--color-primary);"> 馃Ь </span>
-<h2>Historial de pedidos</h2>
-</div>
-<div class="lista-filas">
-<div>
-<div style="flex:1;">
-<p style="margin:0; font-weight:600; font-size:0.9rem;">Desparasitante Nexgard</p>
-<p class="texto-secundario" style="margin:0; font-size:0.8rem;">Entregado 路 15 Oct 2023</p>
-</div>
-<span class="icono texto-secundario">>
-</span>
-</div>
-<div>
-<div style="flex:1;">
-<p style="margin:0; font-weight:600; font-size:0.9rem;">Shampoo medicado Oti-Soothe</p>
-<p class="texto-secundario" style="margin:0; font-size:0.8rem;">Entregado 路 02 Sep 2023</p>
-</div>
-<span class="icono texto-secundario">>
-</span>
-</div>
-<div>
-<div style="flex:1;">
-<p style="margin:0; font-weight:600; font-size:0.9rem;">Royal Canin Gastrointestinal</p>
-<p class="texto-secundario" style="margin:0; font-size:0.8rem;">Entregado 路 10 Ago 2023</p>
-</div>
-<span class="icono texto-secundario">>
-</span>
-</div>
-</div>
-<button class="btn btn-secundario btn-bloque" style="margin-top:16px;">Ver todo el historial</button>
-</div>
+
+<section class="encabezado-recetas">
+<h1 class="titulo-pagina">Recetas digitales</h1>
+<p class="subtitulo-pagina">
+Consulta los medicamentos y tratamientos indicados para tus mascotas.
+</p>
 </section>
+
+@if (recetas().length) {
+
+<section class="lista-recetas">
+
+@for (receta of recetas(); track receta.id) {
+
+<article
+class="card receta"
+[class.receta-finalizada]="estaFinalizada(receta.fechaFin)"
+>
+
+<div class="cabecera-receta">
+
+<div>
+<h2>
+Receta: {{ nombreMascota(receta.mascotaId) }}
+</h2>
+
+<p class="texto-secundario">
+{{ receta.veterinario }}
+</p>
+
+<p class="texto-secundario">
+Emitida {{ formatearFecha(receta.fechaEmision) }}
+</p>
+</div>
+
+@if (estaFinalizada(receta.fechaFin)) {
+
+<span class="badge estado-finalizada">
+Finalizada
+</span>
+
+} @else {
+
+<span class="badge badge-ok">
+Vigente
+</span>
+
+}
+
+</div>
+
+<div class="fechas-receta">
+
+<div>
+<span>Fecha de emisión</span>
+<strong>{{ formatearFecha(receta.fechaEmision) }}</strong>
+</div>
+
+<div>
+<span>Fin del tratamiento</span>
+<strong>{{ formatearFecha(receta.fechaFin) }}</strong>
+</div>
+
+</div>
+
+<h3 class="titulo-medicamentos">
+Medicamentos
+</h3>
+
+@for (medicamento of receta.medicamentos; track medicamento.id) {
+
+<div class="item-receta">
+
+<div>
+
+<h3>
+💊 {{ medicamento.nombre }}
+</h3>
+
+<p class="texto-secundario">
+<strong>Dosis:</strong> {{ medicamento.dosis }}
+</p>
+
+<p class="texto-secundario">
+<strong>Duración:</strong> {{ medicamento.duracion }}
+</p>
+
+</div>
+
+</div>
+
+}
+
+</article>
+
+}
+
+</section>
+
+} @else {
+
+<section class="card estado-vacio">
+<h2>No se encontraron recetas</h2>
+<p>No existen recetas que coincidan con la búsqueda.</p>
+</section>
+
+}
+
 </main>

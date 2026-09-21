@@ -1,0 +1,155 @@
+.encabezado-recordatorios {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.contador-recordatorios {
+  background: var(--color-primary);
+  color: white;
+  border-radius: 16px;
+  padding: 16px 24px;
+  min-width: 150px;
+  text-align: center;
+}
+
+.contador-recordatorios span {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.contador-recordatorios p {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+}
+
+.lista-recordatorios {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recordatorio {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.recordatorio-icono {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: var(--color-primary-light);
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+}
+
+.recordatorio-contenido {
+  flex: 1;
+  min-width: 0;
+}
+
+.recordatorio-superior {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.recordatorio-superior h2 {
+  margin: 8px 0 0;
+  font-size: 1.2rem;
+}
+
+.estado {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.recordatorio-datos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.recordatorio-datos div {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.recordatorio-datos span,
+.motivo span {
+  display: block;
+  color: #7b8494;
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+}
+
+.recordatorio-datos strong {
+  font-size: 0.9rem;
+}
+
+.motivo {
+  padding: 12px;
+  border-radius: 10px;
+  background: #f8f9fb;
+}
+
+.motivo p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.estado-vacio {
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.vacio-icono {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.estado-vacio h2 {
+  margin-bottom: 8px;
+}
+
+.estado-vacio p {
+  color: #7b8494;
+  margin: 0 auto;
+  max-width: 420px;
+}
+
+@media (max-width: 700px) {
+  .recordatorio {
+    flex-direction: column;
+  }
+
+  .recordatorio-datos {
+    grid-template-columns: 1fr;
+  }
+
+  .recordatorio-superior {
+    flex-direction: column;
+  }
+}

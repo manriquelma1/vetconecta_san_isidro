@@ -1,3 +1,14 @@
+.selector-pacientes {
+  margin-bottom: 24px;
+}
+
+.pacientes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
 .signo-vital {
   text-align: center;
   display: flex;
@@ -5,24 +16,80 @@
   align-items: center;
   gap: 4px;
 }
+
 .signo-vital .icono {
   font-size: 32px;
 }
+
 .signo-vital .valor {
   font-size: 1.8rem;
   font-weight: 700;
 }
+
 .tratamiento-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 4px;
+  padding: 12px 4px;
   border-bottom: 1px solid var(--color-border);
 }
+
 .tratamiento-item:last-child {
   border-bottom: none;
 }
+
 .tratamiento-item.hecho .titulo-t {
   text-decoration: line-through;
   color: var(--color-text-secondary);
+}
+
+.tratamiento-item input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.form-signos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.form-signos label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.form-signos input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.acciones-signos {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.mensaje-ok {
+  color: #087f5b;
+}
+
+.mensaje-error {
+  color: var(--color-error);
+}
+
+@media (max-width: 700px) {
+  .form-signos {
+    grid-template-columns: 1fr;
+  }
 }
