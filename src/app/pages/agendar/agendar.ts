@@ -24,7 +24,7 @@ export class Agendar {
 
   protected readonly servicios = SERVICIOS;
   protected readonly mascotas = this.citasService.mascotas;
-  protected readonly citas = this.citasService.citasProximas;
+  protected readonly citas = this.citasService.citasOrdenadas;
 
   private readonly hoy = aClave(new Date());
 
@@ -176,7 +176,7 @@ export class Agendar {
       return;
     }
 
-    this.citasService.agregarCita({
+    const cita = this.citasService.agregarCita({
       mascotaId: mascota.id,
       mascotaNombre: mascota.nombre,
       servicio: this.servicio(),
@@ -185,6 +185,11 @@ export class Agendar {
       hora: this.hora(),
       estado: 'Pendiente'
     });
+
+    if (!cita) {
+      this.mensaje.set({ texto: 'No se pudo reservar. Revisa la sesión y el horario disponible.', error: true });
+      return;
+    }
 
     this.mensaje.set({
       texto: `Cita registrada para ${mascota.nombre} el ${this.fechaLegible(this.fecha())} a las ${this.hora()}.`,
@@ -196,7 +201,12 @@ export class Agendar {
   }
 
   protected cancelar(cita: Cita): void {
-    this.citasService.eliminarCita(cita.id);
+    if (!window.confirm(`¿Cancelar la cita de ${cita.mascotaNombre}?`)) return;
+    const error = this.citasService.cambiarEstado(cita.id, 'Cancelada');
+    if (error) {
+      this.mensaje.set({ texto: error, error: true });
+      return;
+    }
 
     this.mensaje.set({
       texto: `Se canceló la cita de ${cita.mascotaNombre}.`,

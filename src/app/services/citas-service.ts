@@ -1,8 +1,9 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { Cita } from '../models/cita';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Cita, EstadoCita, ESTADOS_CITA } from '../models/cita';
 import { Mascota } from '../models/mascota';
 import { crearId, guardar, leer } from '../utils/almacenamiento';
 import { claveHoy } from '../utils/fecha';
+import { AuthService } from './auth-service';
 
 const CLAVE_MASCOTAS = 'vetconecta.mascotas';
 const CLAVE_CITAS = 'vetconecta.citas';
@@ -42,6 +43,8 @@ const MASCOTAS_INICIALES: Mascota[] = [
 
 @Injectable({ providedIn: 'root' })
 export class CitasService {
+  private readonly auth = inject(AuthService);
+
   private readonly _mascotas = signal<Mascota[]>(
     leer<Mascota[]>(CLAVE_MASCOTAS, MASCOTAS_INICIALES).map((mascota) => ({
       ...mascota,
@@ -57,15 +60,22 @@ export class CitasService {
     leer<Cita[]>(CLAVE_CITAS, []).map((cita) => ({
       ...cita,
       motivoConsulta: cita.motivoConsulta ?? '',
-      estado: cita.estado ?? 'Pendiente'
+      estado: cita.estado ?? 'Pendiente',
+      propietarioCorreo: cita.propietarioCorreo?.trim().toLowerCase()
     }))
   );
 
   readonly mascotas = this._mascotas.asReadonly();
-  readonly citas = this._citas.asReadonly();
+  readonly citas = computed(() => {
+    const usuario = this.auth.usuario();
+    if (!usuario) return [];
+    return usuario.rol === 'personal'
+      ? this._citas()
+      : this._citas().filter((cita) => cita.propietarioCorreo === usuario.correo);
+  });
 
   readonly citasOrdenadas = computed(() =>
-    [...this._citas()].sort((a, b) =>
+    [...this.citas()].sort((a, b) =>
       `${a.fecha}${a.hora}`.localeCompare(`${b.fecha}${b.hora}`)
     )
   );
@@ -74,7 +84,7 @@ export class CitasService {
     const hoy = claveHoy();
 
     return this.citasOrdenadas().filter(
-      (cita) => cita.fecha >= hoy && cita.estado !== 'Cancelada'
+      (cita) => cita.fecha >= hoy && cita.estado === 'Pendiente'
     );
   });
 
@@ -137,9 +147,17 @@ export class CitasService {
     );
   }
 
-  agregarCita(datos: Omit<Cita, 'id' | 'creadaEn'>): Cita {
+  agregarCita(datos: Omit<Cita, 'id' | 'creadaEn' | 'propietarioNombre' | 'propietarioCorreo'>): Cita | null {
+    const usuario = this.auth.usuario();
+    if (!usuario || usuario.rol !== 'propietario' || this.horasOcupadas(datos.fecha).includes(datos.hora)) {
+      return null;
+    }
+
     const cita: Cita = {
       ...datos,
+      estado: 'Pendiente',
+      propietarioNombre: usuario.nombre,
+      propietarioCorreo: usuario.correo,
       id: crearId(),
       creadaEn: new Date().toISOString()
     };
@@ -150,18 +168,26 @@ export class CitasService {
     return cita;
   }
 
-  eliminarCita(id: string): void {
-    this._citas.update((lista) =>
-      lista.filter((cita) => cita.id !== id)
-    );
-
-    guardar(CLAVE_CITAS, this._citas());
-  }
-
   cambiarEstado(
     id: string,
-    estado: 'Pendiente' | 'Atendida' | 'Cancelada'
-  ): void {
+    estado: EstadoCita
+  ): string | null {
+    const usuario = this.auth.usuario();
+    const cita = this._citas().find((actual) => actual.id === id);
+    if (!usuario || !cita) return 'La cita no esta disponible.';
+    if (!ESTADOS_CITA.includes(estado)) return 'El estado no es valido.';
+    if (usuario.rol !== 'personal' && (
+      cita.propietarioCorreo !== usuario.correo ||
+      cita.estado !== 'Pendiente' || estado !== 'Cancelada'
+    )) {
+      return 'No tienes permiso para realizar este cambio.';
+    }
+
+    if (cita.estado === 'Cancelada' && estado !== 'Cancelada' &&
+        this.horasOcupadas(cita.fecha).includes(cita.hora)) {
+      return 'El horario ya esta ocupado por otra cita. No se puede reactivar.';
+    }
+
     this._citas.update((lista) =>
       lista.map((cita) =>
         cita.id === id
@@ -171,6 +197,7 @@ export class CitasService {
     );
 
     guardar(CLAVE_CITAS, this._citas());
+    return null;
   }
 
   horasOcupadas(fecha: string): string[] {

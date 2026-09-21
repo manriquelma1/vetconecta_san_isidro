@@ -1,3 +1,8 @@
+.card h1, .card p {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
 .menu-item {
   display: flex;
   align-items: center;

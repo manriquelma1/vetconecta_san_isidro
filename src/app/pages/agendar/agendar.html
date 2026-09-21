@@ -264,7 +264,7 @@
 
   <div class="card-titulo">
 
-    <h3>Citas registradas</h3>
+    <h3>Mis citas</h3>
 
     <span class="badge badge-ok">
       {{ citas().length }}
@@ -321,12 +321,14 @@
 
           </div>
 
+          @if (cita.estado === 'Pendiente') {
           <button
             class="btn btn-peligro"
             (click)="cancelar(cita)"
           >
             Cancelar
           </button>
+          }
 
         </div>
 

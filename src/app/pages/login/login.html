@@ -5,7 +5,7 @@
     </div>
 
     <h1 class="titulo-pagina" style="font-size:1.4rem; margin-bottom:4px;">Inicia sesión</h1>
-    <p class="subtitulo-pagina" style="font-size:.9rem;">Ingresa para ver tus citas y las de tus mascotas.</p>
+    <p class="subtitulo-pagina" style="font-size:.9rem;">Propietarios y personal veterinario</p>
 
     <form class="login-form" (submit)="$event.preventDefault(); ingresar()">
       <div class="campo">
@@ -48,7 +48,8 @@
     </button>
 
     <p class="login-nota">
-      Versión de práctica: no se valida ningún usuario todavía. Cualquier correo y clave te dejan entrar.
+      Entorno de demostración. Cuenta del personal: <strong>{{ correoPersonal }}</strong>.
+      Los demás correos ingresan como propietarios. La clave no se valida contra un servidor.
     </p>
   </div>
 </main>

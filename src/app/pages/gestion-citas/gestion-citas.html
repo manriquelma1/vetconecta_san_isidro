@@ -1,0 +1,84 @@
+<main class="contenedor main-content gestion-citas">
+  <header class="encabezado">
+    <div>
+      <p class="texto-mini">Personal veterinario</p>
+      <h1 class="titulo-pagina">Gesti&oacute;n de citas</h1>
+    </div>
+    <span class="total">{{ citas().length }} citas</span>
+  </header>
+
+  <section class="filtros" aria-label="Filtros de citas">
+    <div class="campo">
+      <label for="fecha-citas">Fecha de atenci&oacute;n</label>
+      <input id="fecha-citas" type="date" [value]="fecha()" (input)="filtrarFecha($event)">
+    </div>
+    <button type="button" class="btn btn-secundario" (click)="verHoy()">Hoy</button>
+    <button type="button" class="btn btn-secundario" [attr.aria-pressed]="!fecha()" (click)="verTodas()">Ver todas</button>
+  </section>
+
+  <dl class="resumen" aria-label="Resumen de citas">
+    <div class="pendientes"><dt>Pendientes</dt><dd>{{ pendientes() }}</dd></div>
+    <div class="atendidas"><dt>Atendidas</dt><dd>{{ atendidas() }}</dd></div>
+    <div class="canceladas"><dt>Canceladas</dt><dd>{{ canceladas() }}</dd></div>
+  </dl>
+
+  @if (mensaje(); as aviso) {
+    <p class="aviso" [class.aviso-error]="aviso.error" [attr.role]="aviso.error ? 'alert' : 'status'">{{ aviso.texto }}</p>
+  }
+
+  <section aria-label="Citas programadas">
+    @if (citas().length) {
+      <div class="tabla-wrap" tabindex="0" role="region" aria-label="Listado de citas">
+        <table>
+          <caption class="solo-lectores">{{ fecha() ? 'Citas para la fecha seleccionada' : 'Todas las citas' }}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Hora</th>
+              <th scope="col">Mascota</th>
+              <th scope="col">Propietario</th>
+              <th scope="col">Servicio</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cita of citas(); track cita.id) {
+              <tr>
+                <td class="fecha-cita">{{ cita.fecha | date:'dd/MM/yyyy' }}</td>
+                <td>{{ cita.hora }}</td>
+                <td><strong>{{ cita.mascotaNombre }}</strong></td>
+                <td class="propietario">
+                  <span>{{ cita.propietarioNombre || 'Sin propietario registrado' }}</span>
+                  @if (cita.propietarioCorreo) {
+                    <small>{{ cita.propietarioCorreo }}</small>
+                  }
+                </td>
+                <td>{{ cita.servicio }}</td>
+                <td>
+                  <select class="selector-estado"
+                    [class.pendiente]="cita.estado === 'Pendiente'"
+                    [class.atendida]="cita.estado === 'Atendida'"
+                    [class.cancelada]="cita.estado === 'Cancelada'"
+                    [attr.aria-label]="'Estado de la cita de ' + cita.mascotaNombre + ' del ' + cita.fecha + ' a las ' + cita.hora"
+                    (change)="cambiarEstado(cita, $event)">
+                    @for (estado of estados; track estado) {
+                      <option [value]="estado" [selected]="estado === cita.estado">{{ estado }}</option>
+                    }
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="estado-vacio">
+        <h2>{{ fecha() ? 'No hay citas para esta fecha' : 'No hay citas registradas' }}</h2>
+        @if (fecha()) {
+          <p>{{ fecha() | date:'dd/MM/yyyy' }}</p>
+          <button type="button" class="btn btn-secundario" (click)="verTodas()">Ver todas las citas</button>
+        }
+      </div>
+    }
+  </section>
+</main>

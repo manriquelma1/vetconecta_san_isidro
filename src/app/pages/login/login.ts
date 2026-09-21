@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth-service';
+import { AuthService, CORREO_PERSONAL_DEMO } from '../../services/auth-service';
 
 /** Validacion minima de formato, no de existencia del usuario. */
 const FORMATO_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,6 +19,7 @@ export class Login {
   protected readonly clave = signal('');
   protected readonly verClave = signal(false);
   protected readonly error = signal('');
+  protected readonly correoPersonal = CORREO_PERSONAL_DEMO;
 
   protected ingresar(): void {
     const correo = this.correo().trim();
@@ -34,12 +35,12 @@ export class Login {
 
     // Cualquier clave es aceptada: todavia no hay validacion de usuarios.
     this.auth.ingresar(correo);
-    this.router.navigate(['/dashboard']);
+    this.router.navigate([this.auth.inicio()]);
   }
 
   protected ingresarConGoogle(): void {
     this.auth.ingresarConGoogle();
-    this.router.navigate(['/dashboard']);
+    this.router.navigate([this.auth.inicio()]);
   }
 
   protected escribirCorreo(evento: Event): void {

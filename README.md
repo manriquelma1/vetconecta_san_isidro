@@ -2,6 +2,37 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.6.
 
+## Roles y gestion de citas (HU-07)
+
+Esta aplicacion es un prototipo local: la sesion y las citas se guardan en
+`localStorage`, sin backend ni validacion real de contrasenas. Los guards y los
+controles del servicio organizan el flujo de la demo; no sustituyen la
+autenticacion ni la autorizacion en un servidor.
+
+| Perfil | Acceso de demostracion | Inicio |
+| --- | --- | --- |
+| Personal veterinario | `personal@vetconecta.pe` y cualquier clave no vacia | `/gestion-citas` |
+| Propietario | Cualquier otro correo valido y cualquier clave no vacia | `/dashboard` |
+
+El boton de Google conserva su cuenta ficticia de propietario. Para cambiar de
+cuenta, abrir Mi perfil y cerrar sesion. El rol se conserva al recargar la pagina.
+
+El personal tiene acceso a Gestion de citas desde el menu de escritorio y movil.
+Puede consultar fecha, hora, mascota, propietario y servicio; filtrar por fecha
+(hoy por defecto), ver todas las fechas y cambiar el estado a Pendiente, Atendida
+o Cancelada. Cancelar conserva el registro y libera el horario. No se permite
+reactivar una cita si su horario ya esta ocupado por otra reserva.
+
+Las nuevas citas se asocian al correo y nombre de la sesion del propietario.
+Agenda, Dashboard y los recordatorios de citas muestran solo sus citas. Las citas
+anteriores que no tienen propietario se conservan en la vista del personal como
+"Sin propietario registrado"; no se asignan automaticamente a otra cuenta.
+Los datos de mascotas, recetas e historial del prototipo siguen siendo compartidos.
+
+Para comprobar el flujo, registrar una cita como propietario, cerrar sesion,
+ingresar con la cuenta del personal y consultar su fecha en Gestion de citas.
+Las pruebas de roles, rutas, estados y filtros se ejecutan con `npm test -- --watch=false`.
+
 ## Development server
 
 To start a local development server, run:

@@ -25,12 +25,18 @@
   </p>
 
   <p class="texto-secundario" style="margin:0;">
-    Dueño de mascotas
+    {{ nombreRol() }}
   </p>
 </div>
 
 <div style="display:flex; flex-direction:column; gap:16px;">
 
+@if (esPersonal()) {
+<section>
+  <h2 style="margin-top:0; font-size:1.1rem;">Personal veterinario</h2>
+  <a routerLink="/gestion-citas" class="btn btn-primary">Gestión de citas</a>
+</section>
+} @else {
 <div class="card">
 
   <div class="menu-item">
@@ -477,6 +483,8 @@
   </div>
 
 </div>
+
+}
 
 <button
   class="btn btn-peligro"

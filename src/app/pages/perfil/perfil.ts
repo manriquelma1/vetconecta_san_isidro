@@ -1,11 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth-service';
 import { CitasService } from '../../services/citas-service';
 import { Mascota } from '../../models/mascota';
 
 @Component({
-  imports: [],
+  imports: [RouterLink],
   selector: 'app-perfil',
   styleUrl: './perfil.css',
   templateUrl: './perfil.html',
@@ -16,6 +16,8 @@ export class Perfil {
   private readonly citasService = inject(CitasService);
 
   protected readonly usuario = this.auth.usuario;
+  protected readonly esPersonal = this.auth.esPersonal;
+  protected readonly nombreRol = this.auth.nombreRol;
   protected readonly mascotas = this.citasService.mascotas;
 
   protected readonly mascotaSeleccionadaId = signal(

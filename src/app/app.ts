@@ -14,4 +14,6 @@ export class App {
   /** La barra de navegacion solo se muestra con sesion iniciada. */
   protected readonly autenticado = this.auth.autenticado;
   protected readonly usuario = this.auth.usuario;
+  protected readonly esPersonal = this.auth.esPersonal;
+  protected readonly nombreRol = this.auth.nombreRol;
 }

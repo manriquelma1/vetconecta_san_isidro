@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CitasService } from '../../services/citas-service';
 import { HistorialService } from '../../services/historial-service';
 import { fechaLegible } from '../../utils/fecha';
@@ -12,6 +12,7 @@ import { fechaLegible } from '../../utils/fecha';
 export class Recordatorios {
   private readonly citasService = inject(CitasService);
   private readonly historialService = inject(HistorialService);
+  protected readonly error = signal('');
 
   protected readonly recordatorios = computed(() =>
     this.citasService
@@ -99,7 +100,8 @@ export class Recordatorios {
   }
 
   protected cancelar(id: string): void {
-    this.citasService.cambiarEstado(id, 'Cancelada');
+    if (!window.confirm('¿Cancelar esta cita?')) return;
+    this.error.set(this.citasService.cambiarEstado(id, 'Cancelada') ?? '');
   }
 
   private fechaHoraCita(fecha: string, hora: string): Date {
