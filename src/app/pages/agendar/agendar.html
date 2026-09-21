@@ -6,40 +6,42 @@
 <section>
 <p class="texto-mini">Selecciona paciente</p>
 <div class="selector-mascotas">
-<div class="mascota-item activo">
-<div class="avatar">
-<img src="fotos/colita.svg" alt="Colita">
+  @for (mascota of mascotas(); track mascota.id) {
+    <div class="mascota-item" [class.activo]="mascota.id === mascotaId()" (click)="seleccionarMascota(mascota.id)">
+      <div class="avatar">
+        @if (mascota.foto) {
+          <img [src]="mascota.foto" [alt]="mascota.nombre">
+        } @else {
+          <span class="avatar-inicial">{{ inicial(mascota.nombre) }}</span>
+        }
+      </div>
+      <span>{{ mascota.nombre }}</span>
+    </div>
+  }
+  <div class="mascota-item mascota-nueva" (click)="mostrarFormMascota.set(true)">
+    <div class="avatar">
+      <span class="icono"> ➕ </span>
+    </div>
+    <span>Nuevo</span>
+  </div>
 </div>
-<span>Colita</span>
-</div>
-<div class="mascota-item">
-<div class="avatar">
-<img src="fotos/luna.svg" alt="Luna">
-</div>
-<span>Luna</span>
-</div>
-<div class="mascota-item">
-<div class="avatar">
-<img src="fotos/simba.svg" alt="Simba">
-</div>
-<span>Simba</span>
-</div>
-<div class="mascota-item mascota-nueva">
-<div class="avatar">
-<span class="icono"> ➕ </span>
-</div>
-<span>Nuevo</span>
-</div>
-</div>
+@if (mostrarFormMascota()) {
+  <div class="form-mascota">
+    <input type="text" placeholder="Nombre de la mascota" [value]="nombreNuevaMascota()"
+           (input)="nombreNuevaMascota.set($any($event.target).value)"
+           (keyup.enter)="guardarMascota()">
+    <button class="btn btn-primary" (click)="guardarMascota()">Guardar</button>
+    <button class="btn btn-secundario" (click)="mostrarFormMascota.set(false)">Cancelar</button>
+  </div>
+}
 </section>
 <section style="max-width:400px;">
 <p class="texto-mini">Servicio</p>
 <div class="campo" style="margin-bottom:0;">
-<select>
-<option>Consulta general</option>
-<option>Vacunación</option>
-<option>Cirugía menor</option>
-<option>Peluquería</option>
+<select [value]="servicio()" (change)="seleccionarServicio($event)">
+  @for (nombre of servicios; track nombre) {
+    <option [value]="nombre">{{ nombre }}</option>
+  }
 </select>
 </div>
 </section>
@@ -48,10 +50,10 @@
 <div class="calendario-header">
 <p class="texto-mini" style="margin:0;">Fecha</p>
 <div style="display:flex; align-items:center; gap:8px;">
-<span class="icono" style="cursor:pointer;">
-<</span>
-<strong>Octubre 2023</strong>
-<span class="icono" style="cursor:pointer;">>
+<span class="icono" style="cursor:pointer;" (click)="cambiarMes(-1)">
+&lt;</span>
+<strong>{{ tituloMes() }}</strong>
+<span class="icono" style="cursor:pointer;" (click)="cambiarMes(1)">&gt;
 </span>
 </div>
 </div>
@@ -63,60 +65,63 @@
 <div class="dia-nombre">Vie</div>
 <div class="dia-nombre">Sáb</div>
 <div class="dia-nombre">Dom</div>
-<div class="dia fuera-de-mes">25</div>
-<div class="dia fuera-de-mes">26</div>
-<div class="dia fuera-de-mes">27</div>
-<div class="dia fuera-de-mes">28</div>
-<div class="dia fuera-de-mes">29</div>
-<div class="dia fuera-de-mes">30</div>
-<div class="dia">1</div>
-<div class="dia">2</div>
-<div class="dia">3</div>
-<div class="dia">4</div>
-<div class="dia">5</div>
-<div class="dia">6</div>
-<div class="dia">7</div>
-<div class="dia">8</div>
-<div class="dia">9</div>
-<div class="dia">10</div>
-<div class="dia">11</div>
-<div class="dia seleccionado">12</div>
-<div class="dia">13</div>
-<div class="dia">14</div>
-<div class="dia">15</div>
-<div class="dia">16</div>
-<div class="dia">17</div>
-<div class="dia">18</div>
-<div class="dia">19</div>
-<div class="dia">20</div>
-<div class="dia">21</div>
-<div class="dia">22</div>
-<div class="dia">23</div>
-<div class="dia">24</div>
-<div class="dia">25</div>
-<div class="dia">26</div>
-<div class="dia">27</div>
-<div class="dia">28</div>
-<div class="dia">29</div>
-<div class="dia">30</div>
-<div class="dia">31</div>
+@for (celda of dias(); track $index) {
+  <div class="dia"
+       [class.fuera-de-mes]="celda.fueraDeMes"
+       [class.deshabilitado]="!celda.fueraDeMes && celda.pasado"
+       [class.seleccionado]="celda.clave === fecha()"
+       (click)="seleccionarDia(celda)">{{ celda.numero }}</div>
+}
 </div>
 </div>
 <div class="card">
 <p class="texto-mini">Horario disponible</p>
 <div class="horarios-grid">
-<button class="horario-btn">09:00</button>
-<button class="horario-btn">09:30</button>
-<button class="horario-btn ocupado" disabled>10:00</button>
-<button class="horario-btn seleccionado">10:30</button>
-<button class="horario-btn">11:00</button>
-<button class="horario-btn ocupado" disabled>11:30</button>
-<button class="horario-btn">12:00</button>
-<button class="horario-btn">12:30</button>
+  @for (slot of horarios(); track slot.hora) {
+    <button class="horario-btn"
+            [class.ocupado]="slot.ocupado"
+            [class.seleccionado]="slot.hora === hora()"
+            [disabled]="slot.ocupado"
+            (click)="seleccionarHora(slot.hora)">{{ slot.hora }}</button>
+  }
 </div>
+<p class="texto-secundario" style="margin:14px 0 0; font-size:.8rem;">
+  {{ fechaLegible(fecha()) }}
+</p>
 </div>
 </section>
+@if (mensaje(); as aviso) {
+  <section>
+    <div class="aviso" [class.aviso-error]="aviso.error">{{ aviso.texto }}</div>
+  </section>
+}
 <section style="display:flex; justify-content:flex-end;">
-<button class="btn btn-primary btn-bloque" style="max-width:260px;">Confirmar cita</button>
+<button class="btn btn-primary btn-bloque" style="max-width:260px;" (click)="confirmar()">Confirmar cita</button>
+</section>
+<section class="card">
+  <div class="card-titulo">
+    <h3>Citas registradas</h3>
+    <span class="badge badge-ok">{{ citas().length }}</span>
+  </div>
+  @if (citas().length) {
+    <div class="lista-filas">
+      @for (cita of citas(); track cita.id) {
+        <div style="padding:12px 0;">
+          <div class="avatar" style="width:38px; height:38px; display:grid; place-items:center;">
+            <span class="avatar-inicial">{{ inicial(cita.mascotaNombre) }}</span>
+          </div>
+          <div style="flex:1;">
+            <strong>{{ cita.mascotaNombre }}</strong>
+            <p class="texto-secundario" style="margin:2px 0 0; font-size:.8rem;">
+              {{ cita.servicio }} · {{ fechaLegible(cita.fecha) }} · {{ cita.hora }}
+            </p>
+          </div>
+          <button class="btn btn-peligro" (click)="cancelar(cita)">Cancelar</button>
+        </div>
+      }
+    </div>
+  } @else {
+    <p class="texto-secundario" style="margin:0;">Aún no hay citas registradas.</p>
+  }
 </section>
 </main>

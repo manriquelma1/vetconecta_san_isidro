@@ -95,3 +95,44 @@
   background-color: var(--color-primary-light);
   font-weight: 700;
 }
+.avatar-inicial {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+.calendario-grid .dia.deshabilitado {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.horario-btn:disabled {
+  color: inherit;
+}
+.form-mascota {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.form-mascota input {
+  flex: 1 1 200px;
+  min-height: 44px;
+  padding: 11px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+}
+.aviso {
+  padding: 12px 14px;
+  border-radius: var(--radius-btn);
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--color-primary-light);
+  color: #087e68;
+}
+.aviso.aviso-error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
