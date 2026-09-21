@@ -3,10 +3,9 @@ import { Cita } from '../../models/cita';
 import { AuthService } from '../../services/auth-service';
 import { CitasService } from '../../services/citas-service';
 import { NOMBRES_MES, aClave, fechaLegible } from '../../utils/fecha';
+import { SERVICIOS } from '../../utils/servicios';
 
 const HORARIOS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30'];
-
-const SERVICIOS = ['Consulta general', 'Vacunación', 'Cirugía menor', 'Peluquería'];
 
 const ESPECIES = ['Canino', 'Felino', 'Otro'];
 

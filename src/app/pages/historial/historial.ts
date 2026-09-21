@@ -3,11 +3,10 @@ import { RouterLink } from '@angular/router';
 import { Cita } from '../../models/cita';
 import { CitasService } from '../../services/citas-service';
 import { aClave, claveHoy, enAmPm, fechaLegible } from '../../utils/fecha';
+import { SERVICIOS } from '../../utils/servicios';
 
 /** Visitas que se muestran antes de pulsar "Cargar mas historial". */
 const VISITAS_POR_PAGINA = 3;
-
-const SERVICIOS = ['Consulta general', 'Vacunación', 'Cirugía menor', 'Peluquería', 'Emergencia'];
 
 @Component({
   imports: [RouterLink],
