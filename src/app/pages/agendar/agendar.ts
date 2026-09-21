@@ -1,10 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { Cita } from '../../models/cita';
 import { CitasService } from '../../services/citas-service';
 import { NOMBRES_MES, aClave, fechaLegible } from '../../utils/fecha';
 import { SERVICIOS } from '../../utils/servicios';
 
 const HORARIOS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30'];
+
+/** Mismas opciones que la ficha de Perfil. */
+const ESPECIES = ['Perro', 'Gato', 'Conejo', 'Ave', 'Otro'];
 
 interface Celda {
   numero: number;
@@ -23,6 +26,7 @@ export class Agendar {
   private readonly citasService = inject(CitasService);
 
   protected readonly servicios = SERVICIOS;
+  protected readonly especies = ESPECIES;
   protected readonly mascotas = this.citasService.mascotas;
   protected readonly citas = this.citasService.citasOrdenadas;
 
@@ -34,10 +38,65 @@ export class Agendar {
   protected readonly hora = signal('');
   protected readonly motivoConsulta = signal('');
   protected readonly mesVisible = signal(new Date());
+  protected readonly busquedaMascota = signal('');
 
+  // --- Ficha de la mascota nueva (mismos campos que Perfil) ---
   protected readonly mostrarFormMascota = signal(false);
-  protected readonly nombreNuevaMascota = signal('');
+  protected readonly nombre = signal('');
+  protected readonly especie = signal('');
+  protected readonly raza = signal('');
+  protected readonly edad = signal('');
+  protected readonly peso = signal('');
+  protected readonly alergias = signal('');
+  /** Error propio del dialogo: el de `mensaje` quedaria oculto detras del modal. */
+  protected readonly errorMascota = signal('');
   protected readonly mensaje = signal<{ texto: string; error: boolean } | null>(null);
+
+  private readonly dialogoMascota = viewChild<ElementRef<HTMLDialogElement>>('dialogoMascota');
+
+  constructor() {
+    // Abre y cierra el <dialog> nativo siguiendo a la senal.
+    effect(() => {
+      const dialogo = this.dialogoMascota()?.nativeElement;
+
+      if (!dialogo) {
+        return;
+      }
+
+      if (this.mostrarFormMascota()) {
+        if (!dialogo.open) dialogo.showModal();
+      } else if (dialogo.open) {
+        dialogo.close();
+      }
+    });
+  }
+
+  /** Mascotas que coinciden con el buscador (por nombre, especie o raza). */
+  protected readonly mascotasFiltradas = computed(() => {
+    const texto = this.busquedaMascota().trim().toLowerCase();
+    const mascotas = this.mascotas();
+
+    if (!texto) {
+      return mascotas;
+    }
+
+    return mascotas.filter((mascota) =>
+      [mascota.nombre, mascota.especie, mascota.raza].some((campo) =>
+        (campo ?? '').toLowerCase().includes(texto)
+      )
+    );
+  });
+
+  protected readonly mascotaSeleccionada = computed(() =>
+    this.mascotas().find((mascota) => mascota.id === this.mascotaId()) ?? null
+  );
+
+  /** La mascota elegida puede quedar fuera del filtro: hay que avisarlo. */
+  protected readonly seleccionadaOculta = computed(() => {
+    const id = this.mascotaId();
+
+    return !!id && !this.mascotasFiltradas().some((mascota) => mascota.id === id);
+  });
 
   protected readonly tituloMes = computed(() => {
     const mes = this.mesVisible();
@@ -86,6 +145,38 @@ export class Agendar {
     }));
   });
 
+  protected escribirBusquedaMascota(evento: Event): void {
+    this.busquedaMascota.set((evento.target as HTMLInputElement).value);
+  }
+
+  protected abrirFormMascota(): void {
+    // Si busque una mascota que no existe, ese texto ya es el nombre que quiero dar de alta.
+    this.nombre.set(this.busquedaMascota().trim());
+    this.especie.set('');
+    this.raza.set('');
+    this.edad.set('');
+    this.peso.set('');
+    this.alergias.set('');
+    this.errorMascota.set('');
+    this.mostrarFormMascota.set(true);
+  }
+
+  /** El <dialog> nativo no cierra al pulsar el fondo: el clic se reporta sobre el propio dialogo. */
+  protected cerrarSiFondo(evento: MouseEvent): void {
+    if (evento.target === this.dialogoMascota()?.nativeElement) {
+      this.mostrarFormMascota.set(false);
+    }
+  }
+
+  protected cambiarCampoMascota(
+    destino: 'nombre' | 'especie' | 'raza' | 'edad' | 'peso' | 'alergias',
+    evento: Event,
+  ): void {
+    const valor = (evento.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
+    this[destino].set(valor);
+    this.errorMascota.set('');
+  }
+
   protected seleccionarMascota(id: string): void {
     this.mascotaId.set(id);
     this.mensaje.set(null);
@@ -129,22 +220,55 @@ export class Agendar {
   }
 
   protected guardarMascota(): void {
-    const nombre = this.nombreNuevaMascota().trim();
+    const nombre = this.nombre().trim();
+    const especie = this.especie().trim();
+    const raza = this.raza().trim();
+    const edad = Number(this.edad());
+    const peso = Number(this.peso());
+    const alergias = this.alergias().trim();
 
     if (!nombre) {
-      this.mensaje.set({
-        texto: 'Ingresa el nombre de la mascota.',
-        error: true
-      });
+      this.errorMascota.set('Ingresa el nombre de la mascota.');
       return;
     }
 
-    const mascota = this.citasService.agregarMascota(nombre);
+    if (!especie) {
+      this.errorMascota.set('Selecciona la especie de la mascota.');
+      return;
+    }
+
+    if (!raza) {
+      this.errorMascota.set('Ingresa la raza de la mascota.');
+      return;
+    }
+
+    if (!this.edad().trim() || !Number.isFinite(edad) || edad < 0) {
+      this.errorMascota.set('Ingresa una edad válida.');
+      return;
+    }
+
+    if (!this.peso().trim() || !Number.isFinite(peso) || peso <= 0) {
+      this.errorMascota.set('Ingresa un peso válido.');
+      return;
+    }
+
+    const mascota = this.citasService.agregarMascota(
+      nombre,
+      especie,
+      raza,
+      edad,
+      peso,
+      alergias || 'Ninguna'
+    );
 
     this.mascotaId.set(mascota.id);
-    this.nombreNuevaMascota.set('');
+    this.busquedaMascota.set('');
     this.mostrarFormMascota.set(false);
-    this.mensaje.set(null);
+
+    this.mensaje.set({
+      texto: `${mascota.nombre} se agregó a tus mascotas.`,
+      error: false
+    });
   }
 
   protected confirmar(): void {

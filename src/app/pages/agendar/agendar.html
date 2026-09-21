@@ -6,11 +6,24 @@
 </section>
 
 <section>
-  <p class="texto-mini">Selecciona paciente</p>
+  <div class="cabecera-pacientes">
+    <p class="texto-mini" style="margin:0;">Selecciona paciente</p>
+
+    <div class="buscador" style="width:100%; max-width:280px;">
+      <span class="icono">&#x1F50D;</span>
+      <input
+        type="search"
+        placeholder="Buscar mascota..."
+        aria-label="Buscar mascota por nombre, especie o raza"
+        [value]="busquedaMascota()"
+        (input)="escribirBusquedaMascota($event)"
+      >
+    </div>
+  </div>
 
   <div class="selector-mascotas">
 
-    @for (mascota of mascotas(); track mascota.id) {
+    @for (mascota of mascotasFiltradas(); track mascota.id) {
       <div
         class="mascota-item"
         [class.activo]="mascota.id === mascotaId()"
@@ -34,7 +47,7 @@
 
     <div
       class="mascota-item mascota-nueva"
-      (click)="mostrarFormMascota.set(true)"
+      (click)="abrirFormMascota()"
     >
 
       <div class="avatar">
@@ -47,35 +60,142 @@
 
   </div>
 
-  @if (mostrarFormMascota()) {
-
-    <div class="form-mascota">
-
-      <input
-        type="text"
-        placeholder="Nombre de la mascota"
-        [value]="nombreNuevaMascota()"
-        (input)="nombreNuevaMascota.set($any($event.target).value)"
-        (keyup.enter)="guardarMascota()"
-      >
-
-      <button
-        class="btn btn-primary"
-        (click)="guardarMascota()"
-      >
-        Guardar
-      </button>
-
-      <button
-        class="btn btn-secundario"
-        (click)="mostrarFormMascota.set(false)"
-      >
-        Cancelar
-      </button>
-
-    </div>
-
+  @if (busquedaMascota() && !mascotasFiltradas().length) {
+    <p class="texto-secundario" style="margin:8px 0 0; font-size:.82rem;">
+      Ninguna mascota coincide con "{{ busquedaMascota() }}".
+      Pulsa <strong>Nuevo</strong> para darla de alta.
+    </p>
+  } @else if (seleccionadaOculta()) {
+    <p class="texto-secundario" style="margin:8px 0 0; font-size:.82rem;">
+      Sigue seleccionada <strong>{{ mascotaSeleccionada()?.nombre }}</strong>,
+      que no aparece en la b&uacute;squeda actual.
+    </p>
   }
+
+  <dialog
+    #dialogoMascota
+    class="modal-mascota"
+    aria-labelledby="titulo-modal-mascota"
+    (close)="mostrarFormMascota.set(false)"
+    (click)="cerrarSiFondo($event)"
+  >
+
+    <form
+      class="form-mascota"
+      (submit)="$event.preventDefault(); guardarMascota()"
+    >
+
+      <div class="modal-cabecera">
+        <h2 id="titulo-modal-mascota">Registrar mascota</h2>
+        <button
+          type="button"
+          class="modal-cerrar"
+          aria-label="Cerrar"
+          (click)="mostrarFormMascota.set(false)"
+        >&times;</button>
+      </div>
+
+      <div class="modal-cuerpo">
+
+        <div class="grid-2">
+
+          <div class="campo">
+            <label for="m-nombre">Nombre</label>
+            <input
+              id="m-nombre"
+              type="text"
+              placeholder="Nombre de la mascota"
+              autofocus
+              [value]="nombre()"
+              (input)="cambiarCampoMascota('nombre', $event)"
+            >
+          </div>
+
+          <div class="campo">
+            <label for="m-especie">Especie</label>
+            <select
+              id="m-especie"
+              [value]="especie()"
+              (change)="cambiarCampoMascota('especie', $event)"
+            >
+              <option value="">Selecciona una especie</option>
+              @for (item of especies; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="m-raza">Raza</label>
+            <input
+              id="m-raza"
+              type="text"
+              placeholder="Ej. Labrador"
+              [value]="raza()"
+              (input)="cambiarCampoMascota('raza', $event)"
+            >
+          </div>
+
+          <div class="campo">
+            <label for="m-edad">Edad</label>
+            <input
+              id="m-edad"
+              type="number"
+              min="0"
+              max="50"
+              step="1"
+              placeholder="Edad en a&ntilde;os"
+              [value]="edad()"
+              (input)="cambiarCampoMascota('edad', $event)"
+            >
+          </div>
+
+          <div class="campo">
+            <label for="m-peso">Peso</label>
+            <input
+              id="m-peso"
+              type="number"
+              min="0.1"
+              step="0.1"
+              placeholder="Peso en kg"
+              [value]="peso()"
+              (input)="cambiarCampoMascota('peso', $event)"
+            >
+          </div>
+
+          <div class="campo">
+            <label for="m-alergias">Alergias</label>
+            <textarea
+              id="m-alergias"
+              rows="3"
+              placeholder="Ej. Penicilina o ninguna"
+              [value]="alergias()"
+              (input)="cambiarCampoMascota('alergias', $event)"
+            ></textarea>
+          </div>
+
+        </div>
+
+        @if (errorMascota()) {
+          <p class="aviso aviso-error" role="alert">{{ errorMascota() }}</p>
+        }
+
+      </div>
+
+      <div class="modal-pie">
+        <button
+          type="button"
+          class="btn btn-secundario"
+          (click)="mostrarFormMascota.set(false)"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">Guardar mascota</button>
+      </div>
+
+    </form>
+
+  </dialog>
 
 </section>
 
