@@ -3,11 +3,10 @@ export interface Cita {
   mascotaId: string;
   mascotaNombre: string;
   servicio: string;
-  /** Formato YYYY-MM-DD */
+  motivoConsulta: string;
   fecha: string;
-  /** Formato HH:mm */
   hora: string;
-  /** Fecha ISO en la que se registro la cita */
+  estado: 'Pendiente' | 'Atendida' | 'Cancelada';
   creadaEn: string;
   /** Solo en visitas pasadas registradas desde Historial. */
   veterinario?: string;

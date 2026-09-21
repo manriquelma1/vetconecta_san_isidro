@@ -1,0 +1,107 @@
+<main class="contenedor main-content">
+
+  <section class="encabezado-recordatorios">
+    <div>
+      <h1 class="titulo-pagina">Recordatorios</h1>
+      <p class="subtitulo-pagina">
+        Consulta las próximas citas programadas para tus mascotas.
+      </p>
+    </div>
+
+    <div class="contador-recordatorios">
+      <span>{{ recordatorios().length }}</span>
+      <p>Próximas citas</p>
+    </div>
+  </section>
+
+  @if (recordatorios().length) {
+
+    <section class="lista-recordatorios">
+
+      @for (cita of recordatorios(); track cita.id) {
+
+        <article class="card recordatorio">
+
+          <div class="recordatorio-icono">
+            📅
+          </div>
+
+          <div class="recordatorio-contenido">
+
+            <div class="recordatorio-superior">
+
+              <div>
+                <span class="badge badge-ok">
+                  {{ textoTiempo(cita.fecha) }}
+                </span>
+
+                <h2>{{ cita.mascotaNombre }}</h2>
+              </div>
+
+              <span class="estado">
+                {{ cita.estado }}
+              </span>
+
+            </div>
+
+            <div class="recordatorio-datos">
+
+              <div>
+                <span>Servicio</span>
+                <strong>{{ cita.servicio }}</strong>
+              </div>
+
+              <div>
+                <span>Fecha</span>
+                <strong>{{ fechaLegible(cita.fecha) }}</strong>
+              </div>
+
+              <div>
+                <span>Hora</span>
+                <strong>{{ cita.hora }}</strong>
+              </div>
+
+            </div>
+
+            <div class="motivo">
+              <span>Motivo de consulta</span>
+              <p>{{ cita.motivoConsulta || 'Sin motivo registrado' }}</p>
+            </div>
+
+            <div class="acciones">
+              <button
+                type="button"
+                class="btn btn-secundario"
+                (click)="cancelar(cita.id)"
+              >
+                Cancelar cita
+              </button>
+            </div>
+
+          </div>
+
+        </article>
+
+      }
+
+    </section>
+
+  } @else {
+
+    <section class="card estado-vacio">
+
+      <div class="vacio-icono">
+        🔔
+      </div>
+
+      <h2>No tienes recordatorios pendientes</h2>
+
+      <p>
+        Cuando registres una próxima cita veterinaria aparecerá automáticamente aquí.
+      </p>
+
+    </section>
+
+  }
+
+</main>

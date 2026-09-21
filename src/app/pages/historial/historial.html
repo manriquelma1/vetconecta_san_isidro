@@ -1,244 +1,300 @@
 <main class="contenedor main-content">
+
 <section style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:end; gap:16px;">
+
 <div>
-<h1 class="titulo-pagina">Historial m&eacute;dico</h1>
-<p class="subtitulo-pagina">Consulta el expediente cl&iacute;nico y registros de vacunaci&oacute;n.</p>
+<h1 class="titulo-pagina">Historial médico</h1>
+<p class="subtitulo-pagina">Consulta el expediente clínico y registros de vacunación.</p>
 </div>
+
 <div class="buscador" style="width:100%; max-width:320px;">
-<span class="icono"> &#x1F50D; </span>
-<input type="text" placeholder="Buscar por paciente o propietario..."
-       [value]="busqueda()" (input)="escribirBusqueda($event)">
+<span class="icono">🔍</span>
+<input
+  type="text"
+  placeholder="Buscar por paciente..."
+  [value]="busqueda()"
+  (input)="cambiarBusqueda($event)"
+>
 </div>
+
 </section>
 
-<!-- Selector de paciente -->
-<section>
-  <p class="texto-mini">Pacientes</p>
-  @if (mascotasFiltradas().length) {
-    <div class="chips-pacientes">
-      @for (item of mascotasFiltradas(); track item.id) {
-        <button class="chip-paciente" [class.activo]="item.id === mascotaId()"
-                (click)="seleccionar(item.id)">
-          <span class="avatar" style="width:28px; height:28px;">
-            @if (item.foto) {
-              <img [src]="item.foto" alt="">
-            } @else {
-              <span class="avatar-inicial">{{ inicial(item.nombre) }}</span>
-            }
-          </span>
-          {{ item.nombre }}
-        </button>
-      }
-    </div>
-  } @else {
-    <p class="texto-secundario" style="margin:0;">Ning&uacute;n paciente coincide con "{{ busqueda() }}".</p>
-  }
-</section>
+<section class="card">
 
-<!-- Tarjeta con datos del paciente -->
-@if (mascota(); as paciente) {
-<section class="card" style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
-<div class="avatar" style="width:88px; height:88px; border:3px solid var(--color-primary-light);">
-  @if (paciente.foto) {
-    <img [src]="paciente.foto" [alt]="paciente.nombre">
-  } @else {
-    <span class="avatar-inicial" style="font-size:2rem;">{{ inicial(paciente.nombre) }}</span>
-  }
+<div class="card-titulo">
+<h3>Seleccionar mascota</h3>
 </div>
-<div style="flex:1; min-width:220px;">
-<div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-<h2 style="margin:0;">{{ paciente.nombre }}</h2>
-@if (tieneCitaProxima()) {
-  <span class="badge badge-ok">Con cita programada</span>
-} @else {
-  <span class="badge badge-pendiente">Sin cita programada</span>
+
+<div style="display:flex; gap:10px; flex-wrap:wrap;">
+
+@for (mascota of mascotasFiltradas(); track mascota.id) {
+
+<button
+  type="button"
+  class="btn"
+  [class.btn-primary]="mascota.id === mascotaSeleccionadaId()"
+  [class.btn-secundario]="mascota.id !== mascotaSeleccionadaId()"
+  (click)="seleccionarMascota(mascota.id)"
+>
+{{ mascota.nombre }}
+</button>
+
+} @empty {
+
+<p class="texto-secundario">
+No se encontraron mascotas.
+</p>
+
 }
+
 </div>
-<div class="grid-2" style="max-width:420px;">
+
+</section>
+
+@if (mascotaSeleccionada(); as mascota) {
+
+<section class="card" style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
+
+<div
+  class="avatar"
+  style="width:88px; height:88px; border:3px solid var(--color-primary-light); display:grid; place-items:center;"
+>
+
+@if (mascota.foto) {
+
+<img
+  [src]="mascota.foto"
+  [alt]="mascota.nombre"
+>
+
+} @else {
+
+<strong style="font-size:2rem;">
+{{ mascota.nombre.charAt(0).toUpperCase() }}
+</strong>
+
+}
+
+</div>
+
+<div style="flex:1; min-width:220px;">
+
+<div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+
+<h2 style="margin:0;">
+{{ mascota.nombre }}
+</h2>
+
+<span class="badge badge-ok">
+Paciente activo
+</span>
+
+</div>
+
+<div class="grid-2" style="max-width:520px;">
+
 <div>
 <p class="texto-mini">Especie / raza</p>
-<p style="margin:0; font-weight:600;">{{ paciente.especie || '—' }}{{ paciente.raza ? ', ' + paciente.raza : '' }}</p>
+<p style="margin:0; font-weight:600;">
+{{ mascota.especie || 'Sin registrar' }} / {{ mascota.raza || 'Sin registrar' }}
+</p>
 </div>
+
 <div>
 <p class="texto-mini">Edad</p>
-<p style="margin:0; font-weight:600;">{{ paciente.edad || '—' }}</p>
-</div>
-<div>
-<p class="texto-mini">Sexo</p>
-<p style="margin:0; font-weight:600;">{{ paciente.sexo || '—' }}</p>
-</div>
-<div>
-<p class="texto-mini">Propietario</p>
-<p style="margin:0; font-weight:600;">{{ paciente.propietario || '—' }}</p>
-</div>
-</div>
-</div>
-<a routerLink="/agendar" class="btn btn-primary">
-<span class="icono" style="font-size:18px;"> &#x1F4DD; </span>Nueva consulta</a>
-</section>
-}
-
-<!-- Registro de vacunacion -->
-<section class="card">
-<div class="card-titulo" style="justify-content:space-between;">
-<div style="display:flex; align-items:center; gap:8px;">
-<div class="icono-circulo">
-<span class="icono" style="font-size:18px;"> &#x1F489; </span>
-</div>
-<h3>Registro de vacunaci&oacute;n</h3>
-</div>
-<a href="#" style="color:var(--color-primary); font-weight:600; font-size:0.85rem;">+ A&ntilde;adir</a>
-</div>
-<p class="texto-secundario" style="margin:-8px 0 14px; font-size:.78rem;">
-  Datos de muestra: a&uacute;n no existe registro de vacunas en la aplicaci&oacute;n.
+<p style="margin:0; font-weight:600;">
+{{ mascota.edad }} años
 </p>
+</div>
+
+<div>
+<p class="texto-mini">Peso</p>
+<p style="margin:0; font-weight:600;">
+{{ mascota.peso }} kg
+</p>
+</div>
+
+<div>
+<p class="texto-mini">Alergias</p>
+<p style="margin:0; font-weight:600;">
+{{ mascota.alergias || 'Ninguna' }}
+</p>
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<section class="card">
+
+<div class="card-titulo" style="justify-content:space-between;">
+
+<div style="display:flex; align-items:center; gap:8px;">
+
+<div class="icono-circulo">
+<span class="icono" style="font-size:18px;">💉</span>
+</div>
+
+<h3>Registro de vacunación</h3>
+
+</div>
+
+</div>
+
+@if (vacunas().length) {
+
 <div class="tabla-wrap">
+
 <table>
+
 <thead>
 <tr>
 <th>Vacuna</th>
-<th>Fecha aplicaci&oacute;n</th>
-<th>Pr&oacute;xima dosis</th>
+<th>Fecha aplicación</th>
+<th>Próxima dosis</th>
 <th>Estado</th>
 </tr>
 </thead>
+
 <tbody>
+
+@for (vacuna of vacunas(); track vacuna.id) {
+
 <tr>
-<td style="font-weight:600;">S&eacute;xtuple canina</td>
-<td>12 Oct 2023</td>
-<td>12 Oct 2024</td>
-<td>
-<span class="badge badge-ok">Al d&iacute;a</span>
+
+<td style="font-weight:600;">
+{{ vacuna.nombre }}
 </td>
-</tr>
-<tr>
-<td style="font-weight:600;">Antirr&aacute;bica</td>
-<td>05 Sep 2023</td>
-<td>05 Sep 2024</td>
+
 <td>
-<span class="badge badge-ok">Al d&iacute;a</span>
+{{ formatearFecha(vacuna.fechaAplicacion) }}
 </td>
-</tr>
-<tr>
-<td style="font-weight:600;">Bordetella</td>
-<td>10 May 2023</td>
-<td style="color:var(--color-error); font-weight:600;">10 Nov 2023</td>
+
 <td>
-<span class="badge badge-vencida">Vencida</span>
+{{ formatearFecha(vacuna.proximaDosis) }}
 </td>
+
+<td>
+
+<span
+  class="badge"
+  [class.badge-ok]="vacuna.estado === 'Al día'"
+  [class.badge-vencida]="vacuna.estado === 'Vencida'"
+>
+{{ vacuna.estado }}
+</span>
+
+</td>
+
 </tr>
+
+}
+
 </tbody>
+
 </table>
+
 </div>
+
+} @else {
+
+<p class="texto-secundario">
+No existen vacunas registradas para esta mascota.
+</p>
+
+}
+
 </section>
 
-<!-- Visitas recientes -->
 <section class="card">
-<div class="card-titulo" style="justify-content:space-between;">
-  <div style="display:flex; align-items:center; gap:8px;">
-    <div class="icono-circulo">
-      <span class="icono" style="font-size:18px;"> &#x1F4CB; </span>
-    </div>
-    <h3>Visitas recientes</h3>
-  </div>
-  @if (mascota() && !mostrarFormulario()) {
-    <button class="btn btn-secundario" (click)="abrirFormulario()">+ Registrar visita</button>
-  }
+
+<div class="card-titulo">
+
+<div class="icono-circulo">
+<span class="icono" style="font-size:18px;">📋</span>
 </div>
 
-@if (mostrarFormulario()) {
-  <form class="form-visita" (submit)="$event.preventDefault(); registrarVisita()">
-    <p class="texto-mini" style="margin-bottom:12px;">
-      Registrar una visita ya ocurrida de {{ mascota()?.nombre }}
-    </p>
-    <div class="grid-2">
-      <div class="campo">
-        <label for="v-fecha">Fecha de la visita</label>
-        <input id="v-fecha" type="date" [max]="ayer"
-               [value]="fFecha()" (input)="escribir('fFecha', $event)">
-      </div>
-      <div class="campo">
-        <label for="v-hora">Hora</label>
-        <input id="v-hora" type="time"
-               [value]="fHora()" (input)="escribir('fHora', $event)">
-      </div>
-    </div>
-    <div class="grid-2">
-      <div class="campo">
-        <label for="v-servicio">Motivo</label>
-        <select id="v-servicio" [value]="fServicio()" (change)="escribir('fServicio', $event)">
-          @for (nombre of servicios; track nombre) {
-            <option [value]="nombre">{{ nombre }}</option>
-          }
-        </select>
-      </div>
-      <div class="campo">
-        <label for="v-vet">Veterinario (opcional)</label>
-        <input id="v-vet" type="text" placeholder="Dr. Alejandro G&oacute;mez"
-               [value]="fVeterinario()" (input)="escribir('fVeterinario', $event)">
-      </div>
-    </div>
-    <div class="campo">
-      <label for="v-notas">Notas cl&iacute;nicas (opcional)</label>
-      <textarea id="v-notas" placeholder="Diagn&oacute;stico, tratamiento indicado, observaciones..."
-                [value]="fNotas()" (input)="escribir('fNotas', $event)"></textarea>
-    </div>
-    @if (error()) {
-      <p class="aviso-error" role="alert">{{ error() }}</p>
-    }
-    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-      <button type="submit" class="btn btn-primary">Guardar visita</button>
-      <button type="button" class="btn btn-secundario" (click)="mostrarFormulario.set(false)">Cancelar</button>
-    </div>
-  </form>
-}
+<h3>Visitas recientes</h3>
+
+</div>
 
 @if (visitas().length) {
-  <div class="timeline">
-    @for (visita of visitas(); track visita.id) {
-      <div class="timeline-item">
-        <div style="display:flex; flex-wrap:wrap; gap:16px;">
-          <div style="min-width:100px;">
-            <p style="margin:0; color:var(--color-primary); font-weight:700; font-size:0.85rem;">
-              {{ fechaLegible(visita.fecha) }}
-            </p>
-            <p class="texto-secundario" style="margin:0; font-size:0.8rem;">{{ enAmPm(visita.hora) }}</p>
-          </div>
-          <div style="flex:1; min-width:220px; border:1px solid var(--color-border); border-radius:var(--radius-btn); padding:12px;">
-            <div style="display:flex; justify-content:space-between; align-items:start; gap:10px;">
-              <h4 style="margin:0;">{{ visita.servicio }}</h4>
-              <button class="enlace-eliminar" (click)="eliminarVisita(visita)"
-                      [attr.aria-label]="'Eliminar visita del ' + fechaLegible(visita.fecha)">Eliminar</button>
-            </div>
-            @if (visita.notas) {
-              <p class="texto-secundario" style="margin:6px 0 0; font-size:0.85rem; white-space:pre-line;">{{ visita.notas }}</p>
-            } @else {
-              <p class="texto-secundario" style="margin:6px 0 0; font-size:0.85rem;">Sin notas cl&iacute;nicas registradas.</p>
-            }
-            @if (visita.veterinario) {
-              <div style="display:flex; align-items:center; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid var(--color-border);">
-                <span class="avatar" style="width:24px; height:24px;">
-                  <span class="avatar-inicial" style="font-size:.7rem;">{{ inicial(visita.veterinario) }}</span>
-                </span>
-                <p style="margin:0; font-size:0.8rem;" class="texto-secundario">{{ visita.veterinario }}</p>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-    }
-  </div>
-  @if (hayMasVisitas()) {
-    <button class="btn btn-secundario btn-bloque" style="margin-top:16px;" (click)="cargarMas()">
-      Cargar m&aacute;s historial
-      <span class="icono" style="font-size:18px;">&#x25BC;</span>
-    </button>
-  }
-} @else if (!mostrarFormulario()) {
-  <p class="texto-secundario" style="margin:0;">
-    {{ mascota()?.nombre }} a&uacute;n no tiene visitas pasadas registradas.
-    Reg&iacute;stralas con "+ Registrar visita", o espera a que pase la fecha de una cita agendada.
-  </p>
+
+<div class="timeline">
+
+@for (visita of visitas(); track visita.id) {
+
+<div class="timeline-item">
+
+<div style="display:flex; flex-wrap:wrap; gap:16px;">
+
+<div style="min-width:110px;">
+
+<p style="margin:0; color:var(--color-primary); font-weight:700; font-size:0.85rem;">
+{{ formatearFecha(visita.fecha) }}
+</p>
+
+<p class="texto-secundario" style="margin:0; font-size:0.8rem;">
+{{ visita.hora }}
+</p>
+
+</div>
+
+<div style="flex:1; min-width:220px; border:1px solid var(--color-border); border-radius:var(--radius-btn); padding:12px;">
+
+<h4 style="margin:0 0 6px;">
+{{ visita.motivo }}
+</h4>
+
+<p class="texto-secundario" style="margin:0 0 8px; font-size:0.85rem;">
+{{ visita.descripcion }}
+</p>
+
+<strong style="color:var(--color-navy); display:block; margin-top:4px;">
+Diagnóstico:
+</strong>
+
+<p class="texto-secundario" style="margin:4px 0 8px;">
+{{ visita.diagnostico }}
+</p>
+
+<div style="display:flex; align-items:center; gap:8px; padding-top:8px; border-top:1px solid var(--color-border);">
+
+<div
+  class="avatar"
+  style="width:24px; height:24px; display:grid; place-items:center;"
+>
+🩺
+</div>
+
+<p style="margin:0; font-size:0.8rem;" class="texto-secundario">
+{{ visita.veterinario }}
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
 }
+
+</div>
+
+} @else {
+
+<p class="texto-secundario">
+Esta mascota todavía no tiene consultas médicas registradas.
+</p>
+
+}
+
 </section>
+
+}
+
 </main>

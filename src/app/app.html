@@ -1,54 +1,108 @@
 @if (autenticado()) {
 <header class="topbar">
 <div class="topbar__inner">
+
 <div class="marca">
-<span class="icono"> 🐾 </span> VetConecta San Isidro </div>
-<nav class="topbar__nav">
-<a routerLink="dashboard" class="activo">
-<span class="icono"> 🏠 </span>Dashboard</a>
-<a routerLink="agendar">
-<span class="icono"> 📅 </span>Agenda</a>
-<a routerLink="internamiento">
-<span class="icono"> 🏥 </span>Clinic</a>
-<a routerLink="recetas">
-<span class="icono"> 💊 </span>Pharmacy</a>
-<a routerLink="historial">
-<span class="icono"> 🕓 </span>History</a>
-</nav>
-<div style="display:flex; align-items:center; gap:10px;">
-<div class="icono-notif">
-<span class="icono"> 🔔 </span>
+<span class="icono">🐾</span>
+VetConecta San Isidro
 </div>
-<a routerLink="perfil" class="enlace-perfil">
-<span class="avatar" style="width:32px; height:32px; border:2px solid var(--color-primary-light);">
+
+<nav class="topbar__nav">
+
+<a routerLink="/dashboard" routerLinkActive="activo">
+<span class="icono">🏠</span>
+Dashboard
+</a>
+
+<a routerLink="/agendar" routerLinkActive="activo">
+<span class="icono">📅</span>
+Agenda
+</a>
+
+<a routerLink="/internamiento" routerLinkActive="activo">
+<span class="icono">🏥</span>
+Clinic
+</a>
+
+<a routerLink="/recetas" routerLinkActive="activo">
+<span class="icono">💊</span>
+Pharmacy
+</a>
+
+<a routerLink="/historial" routerLinkActive="activo">
+<span class="icono">🕓</span>
+History
+</a>
+
+</nav>
+
+<div style="display:flex; align-items:center; gap:10px;">
+
+<a
+routerLink="/recordatorios"
+routerLinkActive="activo"
+class="icono-notif"
+title="Recordatorios"
+>
+<span class="icono">🔔</span>
+</a>
+
+<a routerLink="/perfil" class="enlace-perfil">
+
+<span
+class="avatar"
+style="width:32px; height:32px; border:2px solid var(--color-primary-light);"
+>
 <img src="fotos/julian.svg" alt="">
 </span>
-<span class="nombre-usuario">{{ usuario()?.nombre }}</span>
+
+<span class="nombre-usuario">
+{{ usuario()?.nombre }}
+</span>
+
 </a>
+
 </div>
+
 </div>
 </header>
 }
 
-
-
-
 <router-outlet></router-outlet>
 
 @if (autenticado()) {
+
 <nav class="bottomnav">
-<a routerLink="dashboard" routerLinkActive="activo">
-<span class="icono"> 🏠 </span>Dashboard</a>
-<a routerLink="agendar" routerLinkActive="activo">
-<span class="icono"> 📅 </span>Agenda</a>
-<a routerLink="internamiento">
-<span class="icono"> 🏥 </span>Clinic</a>
-<a routerLink="recetas">
-<span class="icono"> 💊 </span>Pharmacy</a>
-<a routerLink="historial">
-<span class="icono"> 🕓 </span>History</a>
+
+<a routerLink="/dashboard" routerLinkActive="activo">
+<span class="icono">🏠</span>
+Dashboard
+</a>
+
+<a routerLink="/agendar" routerLinkActive="activo">
+<span class="icono">📅</span>
+Agenda
+</a>
+
+<a routerLink="/internamiento" routerLinkActive="activo">
+<span class="icono">🏥</span>
+Clinic
+</a>
+
+<a routerLink="/recetas" routerLinkActive="activo">
+<span class="icono">💊</span>
+Pharmacy
+</a>
+
+<a routerLink="/historial" routerLinkActive="activo">
+<span class="icono">🕓</span>
+History
+</a>
+
 </nav>
+
 <button class="btn-flotante" title="Ayuda">
-<span class="icono"> ❓ </span>
+<span class="icono">❓</span>
 </button>
+
 }

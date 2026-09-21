@@ -1,14 +1,84 @@
-.item-receta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 14px;
-  background-color: var(--color-surface-alt);
-  border-radius: var(--radius-btn);
-  margin-bottom: 12px;
+.encabezado-recetas {
+  margin: 24px 0;
 }
-.item-receta:last-child {
-  margin-bottom: 0;
+
+.lista-recetas {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.receta {
+  border-left: 4px solid var(--color-primary);
+}
+
+.receta-finalizada {
+  opacity: 0.8;
+  border-left-color: #8b8b8b;
+}
+
+.cabecera-receta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.cabecera-receta h2 {
+  margin: 0 0 5px;
+}
+
+.cabecera-receta p {
+  margin: 2px 0;
+}
+
+.estado-finalizada {
+  background: #eeeeee;
+  color: #666666;
+}
+
+.fechas-receta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.fechas-receta div {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  padding: 12px;
+}
+
+.fechas-receta span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.titulo-medicamentos {
+  margin: 0 0 12px;
+}
+
+.item-receta h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.item-receta p {
+  margin: 3px 0;
+}
+
+.estado-vacio {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+@media (max-width: 650px) {
+  .fechas-receta {
+    grid-template-columns: 1fr;
+  }
 }

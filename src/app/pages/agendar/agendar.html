@@ -1,194 +1,350 @@
 <main class="contenedor main-content">
+
 <section>
-<h1 class="titulo-pagina">Agendar cita</h1>
-<p class="subtitulo-pagina">Selecciona tu mascota y el horario de preferencia.</p>
+  <h1 class="titulo-pagina">Agendar cita</h1>
+  <p class="subtitulo-pagina">Selecciona tu mascota y el horario de preferencia.</p>
 </section>
+
 <section>
-<div class="cabecera-pacientes">
-  <p class="texto-mini" style="margin:0;">Selecciona paciente</p>
-  <div class="buscador" style="width:100%; max-width:280px;">
-    <span class="icono"> &#x1F50D; </span>
-    <input type="search" placeholder="Buscar mascota..."
-           aria-label="Buscar mascota por nombre, raza o propietario"
-           [value]="busquedaMascota()" (input)="escribirBusquedaMascota($event)">
-  </div>
-</div>
-<div class="selector-mascotas">
-  @for (mascota of mascotasFiltradas(); track mascota.id) {
-    <div class="mascota-item" [class.activo]="mascota.id === mascotaId()" (click)="seleccionarMascota(mascota.id)">
+  <p class="texto-mini">Selecciona paciente</p>
+
+  <div class="selector-mascotas">
+
+    @for (mascota of mascotas(); track mascota.id) {
+      <div
+        class="mascota-item"
+        [class.activo]="mascota.id === mascotaId()"
+        (click)="seleccionarMascota(mascota.id)"
+      >
+
+        <div class="avatar">
+          @if (mascota.foto) {
+            <img [src]="mascota.foto" [alt]="mascota.nombre">
+          } @else {
+            <span class="avatar-inicial">
+              {{ inicial(mascota.nombre) }}
+            </span>
+          }
+        </div>
+
+        <span>{{ mascota.nombre }}</span>
+
+      </div>
+    }
+
+    <div
+      class="mascota-item mascota-nueva"
+      (click)="mostrarFormMascota.set(true)"
+    >
+
       <div class="avatar">
-        @if (mascota.foto) {
-          <img [src]="mascota.foto" [alt]="mascota.nombre">
-        } @else {
-          <span class="avatar-inicial">{{ inicial(mascota.nombre) }}</span>
-        }
+        <span class="icono">➕</span>
       </div>
-      <span>{{ mascota.nombre }}</span>
+
+      <span>Nuevo</span>
+
     </div>
-  }
-  <div class="mascota-item mascota-nueva" (click)="abrirFormMascota()">
-    <div class="avatar">
-      <span class="icono"> ➕ </span>
-    </div>
-    <span>Nuevo</span>
+
   </div>
-</div>
-@if (busquedaMascota() && !mascotasFiltradas().length) {
-  <p class="texto-secundario" style="margin:8px 0 0; font-size:.82rem;">
-    Ninguna mascota coincide con "{{ busquedaMascota() }}". Pulsa <strong>Nuevo</strong> para darla de alta.
-  </p>
-} @else if (seleccionadaOculta()) {
-  <p class="texto-secundario" style="margin:8px 0 0; font-size:.82rem;">
-    Sigue seleccionada <strong>{{ mascotaSeleccionada()?.nombre }}</strong>, que no aparece en la b&uacute;squeda actual.
-  </p>
-}
-<dialog #dialogoMascota class="modal-mascota" aria-labelledby="titulo-modal-mascota"
-        (close)="mostrarFormMascota.set(false)" (click)="cerrarSiFondo($event)">
-  <form class="form-mascota" (submit)="$event.preventDefault(); guardarMascota()">
-    <div class="modal-cabecera">
-      <h2 id="titulo-modal-mascota">Nueva mascota</h2>
-      <button type="button" class="modal-cerrar" aria-label="Cerrar"
-              (click)="mostrarFormMascota.set(false)">&times;</button>
+
+  @if (mostrarFormMascota()) {
+
+    <div class="form-mascota">
+
+      <input
+        type="text"
+        placeholder="Nombre de la mascota"
+        [value]="nombreNuevaMascota()"
+        (input)="nombreNuevaMascota.set($any($event.target).value)"
+        (keyup.enter)="guardarMascota()"
+      >
+
+      <button
+        class="btn btn-primary"
+        (click)="guardarMascota()"
+      >
+        Guardar
+      </button>
+
+      <button
+        class="btn btn-secundario"
+        (click)="mostrarFormMascota.set(false)"
+      >
+        Cancelar
+      </button>
+
     </div>
 
-    <div class="modal-cuerpo">
-      <div class="grid-2">
-        <div class="campo">
-          <label for="m-nombre">Nombre</label>
-          <input id="m-nombre" type="text" placeholder="Colita" autofocus
-                 [value]="mNombre()" (input)="escribirMascota('mNombre', $event)">
-        </div>
-        <div class="campo">
-          <label for="m-especie">Especie</label>
-          <select id="m-especie" [value]="mEspecie()" (change)="escribirMascota('mEspecie', $event)">
-            @for (item of especies; track item) {
-              <option [value]="item">{{ item }}</option>
-            }
-          </select>
-        </div>
-        <div class="campo">
-          <label for="m-raza">Raza <span class="texto-secundario">(opcional)</span></label>
-          <input id="m-raza" type="text" placeholder="Mestiza"
-                 [value]="mRaza()" (input)="escribirMascota('mRaza', $event)">
-        </div>
-        <div class="campo">
-          <label for="m-edad">Edad en a&ntilde;os <span class="texto-secundario">(opcional)</span></label>
-          <input id="m-edad" type="number" min="0" max="40" step="1" placeholder="3"
-                 [value]="mEdad()" (input)="escribirMascota('mEdad', $event)">
-        </div>
-        <div class="campo">
-          <label for="m-sexo">Sexo</label>
-          <select id="m-sexo" [value]="mSexo()" (change)="escribirMascota('mSexo', $event)">
-            @for (item of sexos; track item) {
-              <option [value]="item">{{ item }}</option>
-            }
-          </select>
-        </div>
-        <div class="campo">
-          <label for="m-propietario">Propietario</label>
-          <input id="m-propietario" type="text"
-                 [value]="mPropietario()" (input)="escribirMascota('mPropietario', $event)">
-        </div>
-      </div>
-      @if (errorMascota()) {
-        <p class="aviso aviso-error" role="alert">{{ errorMascota() }}</p>
-      }
-    </div>
+  }
 
-    <div class="modal-pie">
-      <button type="button" class="btn btn-secundario" (click)="mostrarFormMascota.set(false)">Cancelar</button>
-      <button type="submit" class="btn btn-primary">Guardar mascota</button>
-    </div>
-  </form>
-</dialog>
 </section>
+
 <section style="max-width:400px;">
-<p class="texto-mini">Servicio</p>
-<div class="campo" style="margin-bottom:0;">
-<select [value]="servicio()" (change)="seleccionarServicio($event)">
-  @for (nombre of servicios; track nombre) {
-    <option [value]="nombre">{{ nombre }}</option>
-  }
-</select>
-</div>
-</section>
-<section class="grid-8-4">
-<div class="card">
-<div class="calendario-header">
-<p class="texto-mini" style="margin:0;">Fecha</p>
-<div style="display:flex; align-items:center; gap:8px;">
-<span class="icono" style="cursor:pointer;" (click)="cambiarMes(-1)">
-&lt;</span>
-<strong>{{ tituloMes() }}</strong>
-<span class="icono" style="cursor:pointer;" (click)="cambiarMes(1)">&gt;
-</span>
-</div>
-</div>
-<div class="calendario-grid">
-<div class="dia-nombre">Lun</div>
-<div class="dia-nombre">Mar</div>
-<div class="dia-nombre">Mié</div>
-<div class="dia-nombre">Jue</div>
-<div class="dia-nombre">Vie</div>
-<div class="dia-nombre">Sáb</div>
-<div class="dia-nombre">Dom</div>
-@for (celda of dias(); track $index) {
-  <div class="dia"
-       [class.fuera-de-mes]="celda.fueraDeMes"
-       [class.deshabilitado]="!celda.fueraDeMes && celda.pasado"
-       [class.seleccionado]="celda.clave === fecha()"
-       (click)="seleccionarDia(celda)">{{ celda.numero }}</div>
-}
-</div>
-</div>
-<div class="card">
-<p class="texto-mini">Horario disponible</p>
-<div class="horarios-grid">
-  @for (slot of horarios(); track slot.hora) {
-    <button class="horario-btn"
-            [class.ocupado]="slot.ocupado"
-            [class.seleccionado]="slot.hora === hora()"
-            [disabled]="slot.ocupado"
-            (click)="seleccionarHora(slot.hora)">{{ slot.hora }}</button>
-  }
-</div>
-<p class="texto-secundario" style="margin:14px 0 0; font-size:.8rem;">
-  {{ fechaLegible(fecha()) }}
-</p>
-</div>
-</section>
-@if (mensaje(); as aviso) {
-  <section>
-    <div class="aviso" [class.aviso-error]="aviso.error">{{ aviso.texto }}</div>
-  </section>
-}
-<section style="display:flex; justify-content:flex-end;">
-<button class="btn btn-primary btn-bloque" style="max-width:260px;" (click)="confirmar()">Confirmar cita</button>
-</section>
-<section class="card">
-  <div class="card-titulo">
-    <h3>Citas programadas</h3>
-    <span class="badge badge-ok">{{ citas().length }}</span>
-  </div>
-  @if (citas().length) {
-    <div class="lista-filas">
-      @for (cita of citas(); track cita.id) {
-        <div style="padding:12px 0;">
-          <div class="avatar" style="width:38px; height:38px; display:grid; place-items:center;">
-            <span class="avatar-inicial">{{ inicial(cita.mascotaNombre) }}</span>
-          </div>
-          <div style="flex:1;">
-            <strong>{{ cita.mascotaNombre }}</strong>
-            <p class="texto-secundario" style="margin:2px 0 0; font-size:.8rem;">
-              {{ cita.servicio }} · {{ fechaLegible(cita.fecha) }} · {{ cita.hora }}
-            </p>
-          </div>
-          <button class="btn btn-peligro" (click)="cancelar(cita)">Cancelar</button>
-        </div>
+
+  <p class="texto-mini">Servicio</p>
+
+  <div class="campo" style="margin-bottom:0;">
+
+    <select
+      [value]="servicio()"
+      (change)="seleccionarServicio($event)"
+    >
+
+      @for (nombre of servicios; track nombre) {
+        <option [value]="nombre">
+          {{ nombre }}
+        </option>
       }
-    </div>
-  } @else {
-    <p class="texto-secundario" style="margin:0;">Aún no hay citas programadas.</p>
-  }
+
+    </select>
+
+  </div>
+
 </section>
+
+<section style="max-width:600px;">
+
+  <p class="texto-mini">Motivo de consulta</p>
+
+  <div class="campo">
+
+    <textarea
+      rows="4"
+      maxlength="300"
+      placeholder="Ej. Mi mascota no quiere comer desde ayer"
+      [value]="motivoConsulta()"
+      (input)="cambiarMotivo($event)"
+    ></textarea>
+
+  </div>
+
+  <p
+    class="texto-secundario"
+    style="font-size:.75rem; margin-top:4px;"
+  >
+    {{ motivoConsulta().length }}/300 caracteres
+  </p>
+
+</section>
+
+<section class="grid-8-4">
+
+  <div class="card">
+
+    <div class="calendario-header">
+
+      <p
+        class="texto-mini"
+        style="margin:0;"
+      >
+        Fecha
+      </p>
+
+      <div
+        style="display:flex; align-items:center; gap:8px;"
+      >
+
+        <span
+          class="icono"
+          style="cursor:pointer;"
+          (click)="cambiarMes(-1)"
+        >
+          &lt;
+        </span>
+
+        <strong>
+          {{ tituloMes() }}
+        </strong>
+
+        <span
+          class="icono"
+          style="cursor:pointer;"
+          (click)="cambiarMes(1)"
+        >
+          &gt;
+        </span>
+
+      </div>
+
+    </div>
+
+    <div class="calendario-grid">
+
+      <div class="dia-nombre">Lun</div>
+      <div class="dia-nombre">Mar</div>
+      <div class="dia-nombre">Mié</div>
+      <div class="dia-nombre">Jue</div>
+      <div class="dia-nombre">Vie</div>
+      <div class="dia-nombre">Sáb</div>
+      <div class="dia-nombre">Dom</div>
+
+      @for (celda of dias(); track $index) {
+
+        <div
+          class="dia"
+          [class.fuera-de-mes]="celda.fueraDeMes"
+          [class.deshabilitado]="!celda.fueraDeMes && celda.pasado"
+          [class.seleccionado]="celda.clave === fecha()"
+          (click)="seleccionarDia(celda)"
+        >
+          {{ celda.numero }}
+        </div>
+
+      }
+
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <p class="texto-mini">
+      Horario disponible
+    </p>
+
+    <div class="horarios-grid">
+
+      @for (slot of horarios(); track slot.hora) {
+
+        <button
+          class="horario-btn"
+          [class.ocupado]="slot.ocupado"
+          [class.seleccionado]="slot.hora === hora()"
+          [disabled]="slot.ocupado"
+          (click)="seleccionarHora(slot.hora)"
+        >
+          {{ slot.hora }}
+        </button>
+
+      }
+
+    </div>
+
+    <p
+      class="texto-secundario"
+      style="margin:14px 0 0; font-size:.8rem;"
+    >
+      {{ fechaLegible(fecha()) }}
+    </p>
+
+  </div>
+
+</section>
+
+@if (mensaje(); as aviso) {
+
+  <section>
+
+    <div
+      class="aviso"
+      [class.aviso-error]="aviso.error"
+    >
+      {{ aviso.texto }}
+    </div>
+
+  </section>
+
+}
+
+<section
+  style="display:flex; justify-content:flex-end;"
+>
+
+  <button
+    class="btn btn-primary btn-bloque"
+    style="max-width:260px;"
+    (click)="confirmar()"
+  >
+    Confirmar cita
+  </button>
+
+</section>
+
+<section class="card">
+
+  <div class="card-titulo">
+
+    <h3>Citas registradas</h3>
+
+    <span class="badge badge-ok">
+      {{ citas().length }}
+    </span>
+
+  </div>
+
+  @if (citas().length) {
+
+    <div class="lista-filas">
+
+      @for (cita of citas(); track cita.id) {
+
+        <div style="padding:12px 0;">
+
+          <div
+            class="avatar"
+            style="width:38px; height:38px; display:grid; place-items:center;"
+          >
+
+            <span class="avatar-inicial">
+              {{ inicial(cita.mascotaNombre) }}
+            </span>
+
+          </div>
+
+          <div style="flex:1;">
+
+            <strong>
+              {{ cita.mascotaNombre }}
+            </strong>
+
+            <p
+              class="texto-secundario"
+              style="margin:2px 0 0; font-size:.8rem;"
+            >
+              {{ cita.servicio }} ·
+              {{ fechaLegible(cita.fecha) }} ·
+              {{ cita.hora }}
+            </p>
+
+            <p
+              class="texto-secundario"
+              style="margin:4px 0 0; font-size:.8rem;"
+            >
+              Motivo: {{ cita.motivoConsulta }}
+            </p>
+
+            <p
+              style="margin:5px 0 0; font-size:.78rem; font-weight:600;"
+            >
+              Estado: {{ cita.estado || 'Pendiente' }}
+            </p>
+
+          </div>
+
+          <button
+            class="btn btn-peligro"
+            (click)="cancelar(cita)"
+          >
+            Cancelar
+          </button>
+
+        </div>
+
+      }
+
+    </div>
+
+  } @else {
+
+    <p
+      class="texto-secundario"
+      style="margin:0;"
+    >
+      Aún no hay citas registradas.
+    </p>
+
+  }
+
+</section>
+
 </main>
