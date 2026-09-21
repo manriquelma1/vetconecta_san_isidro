@@ -3,7 +3,7 @@ import { CitasService } from '../../services/citas-service';
 import { HistorialService } from '../../services/historial-service';
 
 @Component({
-  imports: [RouterLink],
+  imports: [],
   selector: 'app-historial',
   styleUrl: './historial.css',
   templateUrl: './historial.html',

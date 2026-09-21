@@ -1,15 +1,10 @@
-import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Cita } from '../../models/cita';
-import { AuthService } from '../../services/auth-service';
 import { CitasService } from '../../services/citas-service';
 import { NOMBRES_MES, aClave, fechaLegible } from '../../utils/fecha';
 import { SERVICIOS } from '../../utils/servicios';
 
 const HORARIOS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30'];
-
-const ESPECIES = ['Canino', 'Felino', 'Otro'];
-
-const SEXOS = ['Hembra', 'Macho'];
 
 interface Celda {
   numero: number;
@@ -26,11 +21,8 @@ interface Celda {
 })
 export class Agendar {
   private readonly citasService = inject(CitasService);
-  private readonly auth = inject(AuthService);
 
   protected readonly servicios = SERVICIOS;
-  protected readonly especies = ESPECIES;
-  protected readonly sexos = SEXOS;
   protected readonly mascotas = this.citasService.mascotas;
   protected readonly citas = this.citasService.citasProximas;
 
@@ -42,54 +34,10 @@ export class Agendar {
   protected readonly hora = signal('');
   protected readonly motivoConsulta = signal('');
   protected readonly mesVisible = signal(new Date());
-  protected readonly busquedaMascota = signal('');
 
-  // --- Ficha de la mascota nueva ---
   protected readonly mostrarFormMascota = signal(false);
-  protected readonly mNombre = signal('');
-  protected readonly mEspecie = signal(ESPECIES[0]);
-  protected readonly mRaza = signal('');
-  protected readonly mEdad = signal('');
-  protected readonly mSexo = signal(SEXOS[0]);
-  protected readonly mPropietario = signal('');
-  protected readonly errorMascota = signal('');
+  protected readonly nombreNuevaMascota = signal('');
   protected readonly mensaje = signal<{ texto: string; error: boolean } | null>(null);
-
-  private readonly dialogoMascota = viewChild<ElementRef<HTMLDialogElement>>('dialogoMascota');
-
-  constructor() {
-    // Abre y cierra el <dialog> nativo siguiendo a la senal.
-    effect(() => {
-      const dialogo = this.dialogoMascota()?.nativeElement;
-      if (!dialogo) return;
-      if (this.mostrarFormMascota()) {
-        if (!dialogo.open) dialogo.showModal();
-      } else if (dialogo.open) {
-        dialogo.close();
-      }
-    });
-  }
-
-  /** Mascotas que coinciden con el buscador (por nombre, raza o propietario). */
-  protected readonly mascotasFiltradas = computed(() => {
-    const texto = this.busquedaMascota().trim().toLowerCase();
-    const mascotas = this.mascotas();
-    if (!texto) return mascotas;
-    return mascotas.filter((mascota) =>
-      [mascota.nombre, mascota.raza, mascota.propietario]
-        .some((campo) => (campo ?? '').toLowerCase().includes(texto)),
-    );
-  });
-
-  /** La seleccionada puede quedar fuera del filtro: hay que avisarlo. */
-  protected readonly seleccionadaOculta = computed(() => {
-    const id = this.mascotaId();
-    return !!id && !this.mascotasFiltradas().some((mascota) => mascota.id === id);
-  });
-
-  protected readonly mascotaSeleccionada = computed(
-    () => this.mascotas().find((mascota) => mascota.id === this.mascotaId()) ?? null,
-  );
 
   protected readonly tituloMes = computed(() => {
     const mes = this.mesVisible();
@@ -137,10 +85,6 @@ export class Agendar {
       ocupado: ocupadas.includes(hora)
     }));
   });
-
-  protected readonly citasDelDia = computed(() =>
-    this.citas().filter((cita) => cita.fecha === this.fecha())
-  );
 
   protected seleccionarMascota(id: string): void {
     this.mascotaId.set(id);
@@ -198,7 +142,7 @@ export class Agendar {
     const mascota = this.citasService.agregarMascota(nombre);
 
     this.mascotaId.set(mascota.id);
-    this.busquedaMascota.set('');
+    this.nombreNuevaMascota.set('');
     this.mostrarFormMascota.set(false);
     this.mensaje.set(null);
   }
