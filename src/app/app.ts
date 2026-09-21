@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
+import { AuthService } from './services/auth-service';
 
 @Component({
   imports: [RouterOutlet, RouterLinkWithHref,RouterLinkActive],
@@ -8,5 +9,9 @@ import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/rou
   templateUrl: './app.html',
 })
 export class App {
-  protected readonly title = signal('vetconecta_san_isidro');
+  private readonly auth = inject(AuthService);
+
+  /** La barra de navegacion solo se muestra con sesion iniciada. */
+  protected readonly autenticado = this.auth.autenticado;
+  protected readonly usuario = this.auth.usuario;
 }

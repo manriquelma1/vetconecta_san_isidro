@@ -1,3 +1,4 @@
+@if (autenticado()) {
 <header class="topbar">
 <div class="topbar__inner">
 <div class="marca">
@@ -18,18 +19,23 @@
 <div class="icono-notif">
 <span class="icono"> 🔔 </span>
 </div>
-<a routerLink="perfil" class="avatar" style="width:32px; height:32px; border:2px solid var(--color-primary-light);">
-<img src="fotos/julian.svg" alt="Perfil">
+<a routerLink="perfil" class="enlace-perfil">
+<span class="avatar" style="width:32px; height:32px; border:2px solid var(--color-primary-light);">
+<img src="fotos/julian.svg" alt="">
+</span>
+<span class="nombre-usuario">{{ usuario()?.nombre }}</span>
 </a>
 </div>
 </div>
 </header>
+}
 
 
 
 
 <router-outlet></router-outlet>
 
+@if (autenticado()) {
 <nav class="bottomnav">
 <a routerLink="dashboard" routerLinkActive="activo">
 <span class="icono"> 🏠 </span>Dashboard</a>
@@ -45,3 +51,4 @@
 <button class="btn-flotante" title="Ayuda">
 <span class="icono"> ❓ </span>
 </button>
+}

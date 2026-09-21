@@ -1,0 +1,66 @@
+.login-pantalla {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+.login-card {
+  width: min(420px, 100%);
+  padding: 32px;
+}
+.login-marca {
+  justify-content: center;
+  margin-bottom: 22px;
+}
+.login-form {
+  margin-top: 22px;
+}
+.campo-clave {
+  position: relative;
+  display: flex;
+}
+.campo-clave input {
+  padding-right: 48px;
+}
+.ver-clave {
+  position: absolute;
+  right: 4px;
+  top: 0;
+  bottom: 0;
+  width: 42px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: none;
+}
+.login-error {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: var(--radius-btn);
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.login-separador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+}
+.login-separador::before,
+.login-separador::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+.login-nota {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}

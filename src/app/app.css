@@ -1,0 +1,15 @@
+.enlace-perfil {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.nombre-usuario {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .nombre-usuario { display: none; }
+}
