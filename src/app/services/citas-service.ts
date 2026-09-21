@@ -8,9 +8,21 @@ const CLAVE_MASCOTAS = 'vetconecta.mascotas';
 const CLAVE_CITAS = 'vetconecta.citas';
 
 const MASCOTAS_INICIALES: Mascota[] = [
-  { id: 'colita', nombre: 'Colita', foto: 'fotos/colita.svg' },
-  { id: 'luna', nombre: 'Luna', foto: 'fotos/luna.svg' },
-  { id: 'simba', nombre: 'Simba', foto: 'fotos/simba.svg' },
+  {
+    id: 'colita', nombre: 'Colita', foto: 'fotos/colita.svg',
+    especie: 'Canino', raza: 'Mestiza', edad: '3 años', sexo: 'Hembra',
+    propietario: 'Carlos Mendoza',
+  },
+  {
+    id: 'luna', nombre: 'Luna', foto: 'fotos/luna.svg',
+    especie: 'Felino', raza: 'Criollo', edad: '2 años', sexo: 'Hembra',
+    propietario: 'Carlos Mendoza',
+  },
+  {
+    id: 'simba', nombre: 'Simba', foto: 'fotos/simba.svg',
+    especie: 'Canino', raza: 'Labrador', edad: '5 años', sexo: 'Macho',
+    propietario: 'Carlos Mendoza',
+  },
 ];
 
 @Injectable({ providedIn: 'root' })
@@ -36,6 +48,14 @@ export class CitasService {
   readonly citasDeHoy = computed(() => {
     const hoy = claveHoy();
     return this.citasOrdenadas().filter((cita) => cita.fecha === hoy);
+  });
+
+  /** Citas ya pasadas, de la mas reciente a la mas antigua. */
+  readonly citasPasadas = computed(() => {
+    const hoy = claveHoy();
+    return this.citasOrdenadas()
+      .filter((cita) => cita.fecha < hoy)
+      .reverse();
   });
 
   agregarMascota(nombre: string): Mascota {

@@ -25,7 +25,7 @@ export class Agendar {
 
   protected readonly servicios = SERVICIOS;
   protected readonly mascotas = this.citasService.mascotas;
-  protected readonly citas = this.citasService.citasOrdenadas;
+  protected readonly citas = this.citasService.citasProximas;
 
   private readonly hoy = aClave(new Date());
 
@@ -69,10 +69,6 @@ export class Agendar {
     const ocupadas = this.citasService.horasOcupadas(this.fecha());
     return HORARIOS.map((hora) => ({ hora, ocupado: ocupadas.includes(hora) }));
   });
-
-  protected readonly citasDelDia = computed(() =>
-    this.citas().filter((cita) => cita.fecha === this.fecha()),
-  );
 
   protected seleccionarMascota(id: string): void {
     this.mascotaId.set(id);
