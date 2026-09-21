@@ -8,4 +8,7 @@ export interface Cita {
   hora: string;
   estado: 'Pendiente' | 'Atendida' | 'Cancelada';
   creadaEn: string;
+  /** Solo en visitas pasadas registradas desde Historial. */
+  veterinario?: string;
+  notas?: string;
 }

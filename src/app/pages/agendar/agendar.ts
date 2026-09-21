@@ -2,10 +2,9 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Cita } from '../../models/cita';
 import { CitasService } from '../../services/citas-service';
 import { NOMBRES_MES, aClave, fechaLegible } from '../../utils/fecha';
+import { SERVICIOS } from '../../utils/servicios';
 
 const HORARIOS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30'];
-
-const SERVICIOS = ['Consulta general', 'Vacunación', 'Cirugía menor', 'Peluquería'];
 
 interface Celda {
   numero: number;
@@ -25,7 +24,7 @@ export class Agendar {
 
   protected readonly servicios = SERVICIOS;
   protected readonly mascotas = this.citasService.mascotas;
-  protected readonly citas = this.citasService.citasOrdenadas;
+  protected readonly citas = this.citasService.citasProximas;
 
   private readonly hoy = aClave(new Date());
 
@@ -86,10 +85,6 @@ export class Agendar {
       ocupado: ocupadas.includes(hora)
     }));
   });
-
-  protected readonly citasDelDia = computed(() =>
-    this.citas().filter((cita) => cita.fecha === this.fecha())
-  );
 
   protected seleccionarMascota(id: string): void {
     this.mascotaId.set(id);
