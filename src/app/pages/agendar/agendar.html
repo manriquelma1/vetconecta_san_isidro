@@ -18,22 +18,72 @@
       <span>{{ mascota.nombre }}</span>
     </div>
   }
-  <div class="mascota-item mascota-nueva" (click)="mostrarFormMascota.set(true)">
+  <div class="mascota-item mascota-nueva" (click)="abrirFormMascota()">
     <div class="avatar">
       <span class="icono"> ➕ </span>
     </div>
     <span>Nuevo</span>
   </div>
 </div>
-@if (mostrarFormMascota()) {
-  <div class="form-mascota">
-    <input type="text" placeholder="Nombre de la mascota" [value]="nombreNuevaMascota()"
-           (input)="nombreNuevaMascota.set($any($event.target).value)"
-           (keyup.enter)="guardarMascota()">
-    <button class="btn btn-primary" (click)="guardarMascota()">Guardar</button>
-    <button class="btn btn-secundario" (click)="mostrarFormMascota.set(false)">Cancelar</button>
-  </div>
-}
+<dialog #dialogoMascota class="modal-mascota" aria-labelledby="titulo-modal-mascota"
+        (close)="mostrarFormMascota.set(false)" (click)="cerrarSiFondo($event)">
+  <form class="form-mascota" (submit)="$event.preventDefault(); guardarMascota()">
+    <div class="modal-cabecera">
+      <h2 id="titulo-modal-mascota">Nueva mascota</h2>
+      <button type="button" class="modal-cerrar" aria-label="Cerrar"
+              (click)="mostrarFormMascota.set(false)">&times;</button>
+    </div>
+
+    <div class="modal-cuerpo">
+      <div class="grid-2">
+        <div class="campo">
+          <label for="m-nombre">Nombre</label>
+          <input id="m-nombre" type="text" placeholder="Colita" autofocus
+                 [value]="mNombre()" (input)="escribirMascota('mNombre', $event)">
+        </div>
+        <div class="campo">
+          <label for="m-especie">Especie</label>
+          <select id="m-especie" [value]="mEspecie()" (change)="escribirMascota('mEspecie', $event)">
+            @for (item of especies; track item) {
+              <option [value]="item">{{ item }}</option>
+            }
+          </select>
+        </div>
+        <div class="campo">
+          <label for="m-raza">Raza <span class="texto-secundario">(opcional)</span></label>
+          <input id="m-raza" type="text" placeholder="Mestiza"
+                 [value]="mRaza()" (input)="escribirMascota('mRaza', $event)">
+        </div>
+        <div class="campo">
+          <label for="m-edad">Edad en a&ntilde;os <span class="texto-secundario">(opcional)</span></label>
+          <input id="m-edad" type="number" min="0" max="40" step="1" placeholder="3"
+                 [value]="mEdad()" (input)="escribirMascota('mEdad', $event)">
+        </div>
+        <div class="campo">
+          <label for="m-sexo">Sexo</label>
+          <select id="m-sexo" [value]="mSexo()" (change)="escribirMascota('mSexo', $event)">
+            @for (item of sexos; track item) {
+              <option [value]="item">{{ item }}</option>
+            }
+          </select>
+        </div>
+        <div class="campo">
+          <label for="m-propietario">Propietario</label>
+          <input id="m-propietario" type="text"
+                 [value]="mPropietario()" (input)="escribirMascota('mPropietario', $event)">
+        </div>
+      </div>
+      @if (errorMascota()) {
+        <p class="aviso aviso-error" role="alert">{{ errorMascota() }}</p>
+      }
+    </div>
+
+    <div class="modal-pie">
+      <button type="button" class="btn btn-secundario" (click)="mostrarFormMascota.set(false)">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Guardar mascota</button>
+    </div>
+  </form>
+</dialog>
 </section>
 <section style="max-width:400px;">
 <p class="texto-mini">Servicio</p>

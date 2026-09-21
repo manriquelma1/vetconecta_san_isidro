@@ -1,11 +1,16 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { Cita } from '../../models/cita';
+import { AuthService } from '../../services/auth-service';
 import { CitasService } from '../../services/citas-service';
 import { NOMBRES_MES, aClave, fechaLegible } from '../../utils/fecha';
 
 const HORARIOS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30'];
 
 const SERVICIOS = ['Consulta general', 'Vacunación', 'Cirugía menor', 'Peluquería'];
+
+const ESPECIES = ['Canino', 'Felino', 'Otro'];
+
+const SEXOS = ['Hembra', 'Macho'];
 
 interface Celda {
   numero: number;
@@ -22,8 +27,11 @@ interface Celda {
 })
 export class Agendar {
   private readonly citasService = inject(CitasService);
+  private readonly auth = inject(AuthService);
 
   protected readonly servicios = SERVICIOS;
+  protected readonly especies = ESPECIES;
+  protected readonly sexos = SEXOS;
   protected readonly mascotas = this.citasService.mascotas;
   protected readonly citas = this.citasService.citasProximas;
 
@@ -35,9 +43,31 @@ export class Agendar {
   protected readonly hora = signal('');
   protected readonly mesVisible = signal(new Date());
 
+  // --- Ficha de la mascota nueva ---
   protected readonly mostrarFormMascota = signal(false);
-  protected readonly nombreNuevaMascota = signal('');
+  protected readonly mNombre = signal('');
+  protected readonly mEspecie = signal(ESPECIES[0]);
+  protected readonly mRaza = signal('');
+  protected readonly mEdad = signal('');
+  protected readonly mSexo = signal(SEXOS[0]);
+  protected readonly mPropietario = signal('');
+  protected readonly errorMascota = signal('');
   protected readonly mensaje = signal<{ texto: string; error: boolean } | null>(null);
+
+  private readonly dialogoMascota = viewChild<ElementRef<HTMLDialogElement>>('dialogoMascota');
+
+  constructor() {
+    // Abre y cierra el <dialog> nativo siguiendo a la senal.
+    effect(() => {
+      const dialogo = this.dialogoMascota()?.nativeElement;
+      if (!dialogo) return;
+      if (this.mostrarFormMascota()) {
+        if (!dialogo.open) dialogo.showModal();
+      } else if (dialogo.open) {
+        dialogo.close();
+      }
+    });
+  }
 
   protected readonly tituloMes = computed(() => {
     const mes = this.mesVisible();
@@ -96,13 +126,59 @@ export class Agendar {
     this.mesVisible.set(new Date(visible.getFullYear(), visible.getMonth() + delta, 1));
   }
 
+  protected abrirFormMascota(): void {
+    this.mNombre.set('');
+    this.mEspecie.set(ESPECIES[0]);
+    this.mRaza.set('');
+    this.mEdad.set('');
+    this.mSexo.set(SEXOS[0]);
+    // El propietario por defecto es quien tiene la sesion abierta.
+    this.mPropietario.set(this.auth.usuario()?.nombre ?? '');
+    this.errorMascota.set('');
+    this.mostrarFormMascota.set(true);
+  }
+
+  /** El <dialog> nativo no cierra al pulsar el fondo: el clic se reporta sobre el propio dialogo. */
+  protected cerrarSiFondo(evento: MouseEvent): void {
+    if (evento.target === this.dialogoMascota()?.nativeElement) {
+      this.mostrarFormMascota.set(false);
+    }
+  }
+
   protected guardarMascota(): void {
-    const nombre = this.nombreNuevaMascota().trim();
-    if (!nombre) return;
-    const mascota = this.citasService.agregarMascota(nombre);
+    const nombre = this.mNombre().trim();
+    if (!nombre) {
+      this.errorMascota.set('Escribe el nombre de la mascota.');
+      return;
+    }
+
+    const anios = Number(this.mEdad());
+    if (this.mEdad() && (!Number.isFinite(anios) || anios < 0 || anios > 40)) {
+      this.errorMascota.set('La edad debe ser un número de años entre 0 y 40.');
+      return;
+    }
+
+    const mascota = this.citasService.agregarMascota({
+      nombre,
+      especie: this.mEspecie(),
+      raza: this.mRaza().trim() || undefined,
+      edad: this.mEdad() ? `${anios} ${anios === 1 ? 'año' : 'años'}` : undefined,
+      sexo: this.mSexo(),
+      propietario: this.mPropietario().trim() || undefined,
+    });
+
     this.mascotaId.set(mascota.id);
-    this.nombreNuevaMascota.set('');
     this.mostrarFormMascota.set(false);
+    this.mensaje.set({ texto: `${mascota.nombre} se agregó a tus mascotas.`, error: false });
+  }
+
+  protected escribirMascota(
+    destino: 'mNombre' | 'mEspecie' | 'mRaza' | 'mEdad' | 'mSexo' | 'mPropietario',
+    evento: Event,
+  ): void {
+    const valor = (evento.target as HTMLInputElement | HTMLSelectElement).value;
+    this[destino].set(valor);
+    this.errorMascota.set('');
   }
 
   protected confirmar(): void {

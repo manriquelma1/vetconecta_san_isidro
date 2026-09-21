@@ -58,8 +58,8 @@ export class CitasService {
       .reverse();
   });
 
-  agregarMascota(nombre: string): Mascota {
-    const mascota: Mascota = { id: crearId(), nombre: nombre.trim(), foto: null };
+  agregarMascota(datos: Omit<Mascota, 'id' | 'foto'>): Mascota {
+    const mascota: Mascota = { ...datos, nombre: datos.nombre.trim(), id: crearId(), foto: null };
     this._mascotas.update((lista) => [...lista, mascota]);
     guardar(CLAVE_MASCOTAS, this._mascotas());
     return mascota;
