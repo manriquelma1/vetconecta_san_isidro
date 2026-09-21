@@ -41,6 +41,7 @@ export class Agendar {
   protected readonly fecha = signal(this.hoy);
   protected readonly hora = signal('');
   protected readonly mesVisible = signal(new Date());
+  protected readonly busquedaMascota = signal('');
 
   // --- Ficha de la mascota nueva ---
   protected readonly mostrarFormMascota = signal(false);
@@ -67,6 +68,27 @@ export class Agendar {
       }
     });
   }
+
+  /** Mascotas que coinciden con el buscador (por nombre, raza o propietario). */
+  protected readonly mascotasFiltradas = computed(() => {
+    const texto = this.busquedaMascota().trim().toLowerCase();
+    const mascotas = this.mascotas();
+    if (!texto) return mascotas;
+    return mascotas.filter((mascota) =>
+      [mascota.nombre, mascota.raza, mascota.propietario]
+        .some((campo) => (campo ?? '').toLowerCase().includes(texto)),
+    );
+  });
+
+  /** La seleccionada puede quedar fuera del filtro: hay que avisarlo. */
+  protected readonly seleccionadaOculta = computed(() => {
+    const id = this.mascotaId();
+    return !!id && !this.mascotasFiltradas().some((mascota) => mascota.id === id);
+  });
+
+  protected readonly mascotaSeleccionada = computed(
+    () => this.mascotas().find((mascota) => mascota.id === this.mascotaId()) ?? null,
+  );
 
   protected readonly tituloMes = computed(() => {
     const mes = this.mesVisible();
@@ -99,6 +121,10 @@ export class Agendar {
     return HORARIOS.map((hora) => ({ hora, ocupado: ocupadas.includes(hora) }));
   });
 
+  protected escribirBusquedaMascota(evento: Event): void {
+    this.busquedaMascota.set((evento.target as HTMLInputElement).value);
+  }
+
   protected seleccionarMascota(id: string): void {
     this.mascotaId.set(id);
     this.mensaje.set(null);
@@ -126,7 +152,8 @@ export class Agendar {
   }
 
   protected abrirFormMascota(): void {
-    this.mNombre.set('');
+    // Si busco una mascota que no existe, ese texto ya es el nombre que quiere dar de alta.
+    this.mNombre.set(this.busquedaMascota().trim());
     this.mEspecie.set(ESPECIES[0]);
     this.mRaza.set('');
     this.mEdad.set('');
@@ -167,6 +194,7 @@ export class Agendar {
     });
 
     this.mascotaId.set(mascota.id);
+    this.busquedaMascota.set('');
     this.mostrarFormMascota.set(false);
     this.mensaje.set({ texto: `${mascota.nombre} se agregó a tus mascotas.`, error: false });
   }

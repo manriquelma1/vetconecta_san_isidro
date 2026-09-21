@@ -4,9 +4,17 @@
 <p class="subtitulo-pagina">Selecciona tu mascota y el horario de preferencia.</p>
 </section>
 <section>
-<p class="texto-mini">Selecciona paciente</p>
+<div class="cabecera-pacientes">
+  <p class="texto-mini" style="margin:0;">Selecciona paciente</p>
+  <div class="buscador" style="width:100%; max-width:280px;">
+    <span class="icono"> &#x1F50D; </span>
+    <input type="search" placeholder="Buscar mascota..."
+           aria-label="Buscar mascota por nombre, raza o propietario"
+           [value]="busquedaMascota()" (input)="escribirBusquedaMascota($event)">
+  </div>
+</div>
 <div class="selector-mascotas">
-  @for (mascota of mascotas(); track mascota.id) {
+  @for (mascota of mascotasFiltradas(); track mascota.id) {
     <div class="mascota-item" [class.activo]="mascota.id === mascotaId()" (click)="seleccionarMascota(mascota.id)">
       <div class="avatar">
         @if (mascota.foto) {
@@ -25,6 +33,15 @@
     <span>Nuevo</span>
   </div>
 </div>
+@if (busquedaMascota() && !mascotasFiltradas().length) {
+  <p class="texto-secundario" style="margin:8px 0 0; font-size:.82rem;">
+    Ninguna mascota coincide con "{{ busquedaMascota() }}". Pulsa <strong>Nuevo</strong> para darla de alta.
+  </p>
+} @else if (seleccionadaOculta()) {
+  <p class="texto-secundario" style="margin:8px 0 0; font-size:.82rem;">
+    Sigue seleccionada <strong>{{ mascotaSeleccionada()?.nombre }}</strong>, que no aparece en la b&uacute;squeda actual.
+  </p>
+}
 <dialog #dialogoMascota class="modal-mascota" aria-labelledby="titulo-modal-mascota"
         (close)="mostrarFormMascota.set(false)" (click)="cerrarSiFondo($event)">
   <form class="form-mascota" (submit)="$event.preventDefault(); guardarMascota()">
