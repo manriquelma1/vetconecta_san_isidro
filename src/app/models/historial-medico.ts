@@ -15,5 +15,6 @@ export interface VisitaMedica {
   motivo: string;
   descripcion: string;
   diagnostico: string;
+  tratamiento: string;
   veterinario: string;
 }

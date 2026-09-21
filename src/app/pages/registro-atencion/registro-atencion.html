@@ -1,0 +1,55 @@
+
+<h2 class="mb-3">Registro de atención médica</h2>
+
+<div class="alert alert-success" *ngIf="guardado">
+  El registro se guardó correctamente en el historial de la mascota.
+</div>
+
+<form [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="mb-3">
+    <label class="form-label">Mascota</label>
+    <select class="form-select" formControlName="mascotaId">
+      <option value="">Selecciona una mascota</option>
+      <option *ngFor="let m of mascotas()" [value]="m.id">{{ m.nombre }}</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <div class="col mb-3">
+      <label class="form-label">Fecha</label>
+      <input type="date" class="form-control" formControlName="fecha">
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">Hora</label>
+      <input type="time" class="form-control" formControlName="hora">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Motivo de la consulta</label>
+    <input type="text" class="form-control" formControlName="motivo">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Veterinario</label>
+    <input type="text" class="form-control" formControlName="veterinario">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Diagnóstico</label>
+    <textarea class="form-control" formControlName="diagnostico" rows="2"></textarea>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Tratamiento</label>
+    <textarea class="form-control" formControlName="tratamiento" rows="2"></textarea>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Observaciones (opcional)</label>
+    <textarea class="form-control" formControlName="descripcion" rows="2"></textarea>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Guardar registro</button>
+</form>
+

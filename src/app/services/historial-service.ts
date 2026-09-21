@@ -41,6 +41,7 @@ const VISITAS_INICIALES: VisitaMedica[] = [
     motivo: 'Revisión por tos crónica',
     descripcion: 'Paciente presenta tos seca desde hace 3 días. Se realiza evaluación clínica.',
     diagnostico: 'Traqueobronquitis leve',
+        tratamiento: 'Broncodilatador y reposo por 5 días',
     veterinario: 'Dr. Alejandro Gómez'
   }
 ];
