@@ -4,7 +4,7 @@
   align-items: center;
   gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .contador-recordatorios {
@@ -28,6 +28,40 @@
   font-size: 0.85rem;
 }
 
+.seccion-recordatorios {
+  margin-bottom: 34px;
+}
+
+.titulo-seccion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.titulo-seccion h2 {
+  margin: 0 0 4px;
+  font-size: 1.2rem;
+}
+
+.titulo-seccion p {
+  margin: 0;
+  color: #7b8494;
+  font-size: 0.9rem;
+}
+
+.cantidad {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+
 .lista-recordatorios {
   display: flex;
   flex-direction: column;
@@ -38,6 +72,17 @@
   display: flex;
   align-items: flex-start;
   gap: 18px;
+  transition: 0.2s ease;
+}
+
+.recordatorio-urgente {
+  border: 1px solid #f5b942;
+  background: #fffdf7;
+}
+
+.recordatorio-vencido {
+  border: 1px solid #ef9a9a;
+  background: #fffafa;
 }
 
 .recordatorio-icono {
@@ -49,6 +94,18 @@
   display: grid;
   place-items: center;
   font-size: 1.5rem;
+}
+
+.recordatorio-urgente .recordatorio-icono {
+  background: #fff0c7;
+}
+
+.icono-vacuna {
+  background: #e8f5e9;
+}
+
+.recordatorio-vencido .icono-vacuna {
+  background: #ffebee;
 }
 
 .recordatorio-contenido {
@@ -78,6 +135,33 @@
   color: var(--color-primary);
 }
 
+.estado-vencido {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.badge-urgente {
+  background: #fff0c7;
+  color: #9a6500;
+}
+
+.badge-vacuna {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge-vencida {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.aviso-24h {
+  margin: 8px 0 0;
+  color: #9a6500;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
 .recordatorio-datos {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -89,6 +173,7 @@
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 12px;
+  background: white;
 }
 
 .recordatorio-datos span,
@@ -125,9 +210,17 @@
   padding: 50px 20px;
 }
 
+.estado-vacio-pequeno {
+  padding: 30px 20px;
+}
+
 .vacio-icono {
   font-size: 3rem;
   margin-bottom: 12px;
+}
+
+.estado-vacio-pequeno .vacio-icono {
+  font-size: 2.2rem;
 }
 
 .estado-vacio h2 {
@@ -137,7 +230,7 @@
 .estado-vacio p {
   color: #7b8494;
   margin: 0 auto;
-  max-width: 420px;
+  max-width: 520px;
 }
 
 @media (max-width: 700px) {
@@ -151,5 +244,9 @@
 
   .recordatorio-superior {
     flex-direction: column;
+  }
+
+  .titulo-seccion {
+    align-items: flex-start;
   }
 }

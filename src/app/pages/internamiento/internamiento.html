@@ -1,308 +1,471 @@
 <main class="contenedor main-content">
 
-<section class="selector-pacientes">
+  <section class="selector-pacientes">
+    <h1 class="titulo-pagina">Hospitalización</h1>
+
+    <p class="subtitulo-pagina">
+      Seguimiento de pacientes hospitalizados.
+    </p>
+
+    <div class="pacientes">
+      @for (internamiento of internamientos(); track internamiento.id) {
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="internamiento.id === internamientoSeleccionadoId()"
+          [class.btn-secundario]="internamiento.id !== internamientoSeleccionadoId()"
+          (click)="seleccionarInternamiento(internamiento.id)"
+        >
+          {{ internamiento.jaula }}
+        </button>
+      }
+    </div>
+  </section>
+
+  @if (internamientoSeleccionado(); as internamiento) {
+
+    @if (mascotaSeleccionada(); as mascota) {
+
+      <section class="cabecera-paciente card">
+
+        <div class="datos-paciente">
+
+          <div class="avatar avatar-paciente">
+            @if (mascota.foto) {
+              <img [src]="mascota.foto" [alt]="mascota.nombre">
+            } @else {
+              <strong>{{ mascota.nombre.charAt(0).toUpperCase() }}</strong>
+            }
+          </div>
+
+          <div>
+
+            <div class="nombre-estado">
+              <h2>
+                {{ mascota.nombre }} ({{ mascota.raza || 'Sin raza' }})
+              </h2>
+
+              <span
+                class="estado-hospitalizacion"
+                [class.estado-alta]="internamiento.estado === 'Alta'"
+              >
+                {{ internamiento.estado }}
+              </span>
+            </div>
+
+            <div class="datos-ingreso">
+
+              <span class="badge">
+                {{ internamiento.jaula }}
+              </span>
 
-<h1 class="titulo-pagina">Hospitalización</h1>
+              <span class="texto-secundario">
+                Ingreso:
+                {{ formatearFecha(internamiento.fechaIngreso) }}
+                - {{ internamiento.horaIngreso }}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        @if (internamiento.estado === 'Internado') {
+
+          <div class="acciones-paciente">
+
+            <button
+              type="button"
+              class="btn btn-secundario"
+              (click)="abrirEvolucion()"
+            >
+              Nueva evolución
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="comenzarActualizarSignos()"
+            >
+              📝 Actualizar signos
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-alta"
+              (click)="darAlta()"
+            >
+              Dar de alta
+            </button>
+
+          </div>
+
+        }
+
+      </section>
+
+      @if (mensaje(); as aviso) {
+
+        <div
+          class="card mensaje"
+          [class.mensaje-error]="aviso.error"
+          [class.mensaje-ok]="!aviso.error"
+        >
+          {{ aviso.texto }}
+        </div>
 
-<p class="subtitulo-pagina">
-Seguimiento de pacientes hospitalizados.
-</p>
+      }
 
-<div class="pacientes">
+      <section class="resumen-hospitalizacion">
 
-@for (internamiento of internamientos(); track internamiento.id) {
+        <div class="card">
+          <span class="etiqueta">Motivo de ingreso</span>
+          <strong>{{ internamiento.motivoIngreso }}</strong>
+        </div>
 
-<button
-type="button"
-class="btn"
-[class.btn-primary]="internamiento.id === internamientoSeleccionadoId()"
-[class.btn-secundario]="internamiento.id !== internamientoSeleccionadoId()"
-(click)="seleccionarInternamiento(internamiento.id)"
->
-{{ internamiento.jaula }}
-</button>
+        <div class="card">
+          <span class="etiqueta">Estado</span>
+          <strong>{{ internamiento.estado }}</strong>
+        </div>
 
-}
+        <div class="card">
+          <span class="etiqueta">Fecha de ingreso</span>
+          <strong>
+            {{ formatearFecha(internamiento.fechaIngreso) }}
+          </strong>
+        </div>
 
-</div>
+        @if (internamiento.estado === 'Alta' && internamiento.fechaAlta) {
 
-</section>
+          <div class="card tarjeta-alta">
+            <span class="etiqueta">Fecha de alta</span>
+            <strong>
+              {{ formatearFecha(internamiento.fechaAlta) }}
+            </strong>
+          </div>
 
-@if (internamientoSeleccionado(); as internamiento) {
+        }
 
-@if (mascotaSeleccionada(); as mascota) {
+      </section>
 
-<section class="grid-8-4">
+      @if (editandoSignos()) {
 
-<div style="display:flex; flex-direction:column; gap:24px;">
+        <section class="card formulario-seccion">
 
-<div
-class="card"
-style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px;"
->
+          <h3>Actualizar signos vitales</h3>
 
-<div style="display:flex; align-items:center; gap:16px;">
+          <div class="form-signos">
 
-<div class="avatar" style="width:64px; height:64px;">
+            <label>
+              Temperatura °C
+              <input
+                type="number"
+                step="0.1"
+                [value]="temperatura()"
+                (input)="cambiarTemperatura($event)"
+              >
+            </label>
 
-@if (mascota.foto) {
-<img [src]="mascota.foto" [alt]="mascota.nombre">
-} @else {
-<strong>{{ mascota.nombre.charAt(0).toUpperCase() }}</strong>
-}
+            <label>
+              Frecuencia cardíaca
+              <input
+                type="number"
+                [value]="frecuenciaCardiaca()"
+                (input)="cambiarFrecuenciaCardiaca($event)"
+              >
+            </label>
 
-</div>
+            <label>
+              Frecuencia respiratoria
+              <input
+                type="number"
+                [value]="frecuenciaRespiratoria()"
+                (input)="cambiarFrecuenciaRespiratoria($event)"
+              >
+            </label>
 
-<div>
+          </div>
 
-<h2 style="margin:0;">
-{{ mascota.nombre }} ({{ mascota.raza || 'Sin raza' }})
-</h2>
+          <div class="acciones-signos">
 
-<div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <button
+              type="button"
+              class="btn btn-secundario"
+              (click)="cancelarActualizacion()"
+            >
+              Cancelar
+            </button>
 
-<span
-class="badge"
-style="background-color:var(--color-warning-bg); color:var(--color-primary);"
->
-{{ internamiento.jaula }}
-</span>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="guardarSignos()"
+            >
+              Guardar signos
+            </button>
 
-<span
-class="texto-secundario"
-style="font-size:0.85rem;"
->
-Ingreso: {{ internamiento.fechaIngreso }} - {{ internamiento.horaIngreso }}
-</span>
+          </div>
 
-</div>
+        </section>
 
-</div>
+      }
 
-</div>
+      @if (mostrandoEvolucion()) {
 
-<button
-type="button"
-class="btn btn-primary"
-(click)="comenzarActualizarSignos()"
->
-<span class="icono" style="font-size:18px;">📝</span>
-Actualizar signos
-</button>
+        <section class="card formulario-seccion">
 
-</div>
+          <h3>Nueva evolución diaria</h3>
 
-@if (mensaje(); as aviso) {
+          <div class="form-evolucion">
 
-<div
-class="card"
-[class.mensaje-error]="aviso.error"
-[class.mensaje-ok]="!aviso.error"
->
-{{ aviso.texto }}
-</div>
-
-}
-
-@if (editandoSignos()) {
-
-<div class="card">
-
-<h3>Actualizar signos vitales</h3>
-
-<div class="form-signos">
-
-<label>
-Temperatura °C
-<input
-type="number"
-step="0.1"
-[value]="temperatura()"
-(input)="cambiarTemperatura($event)"
->
-</label>
-
-<label>
-Frecuencia cardíaca
-<input
-type="number"
-[value]="frecuenciaCardiaca()"
-(input)="cambiarFrecuenciaCardiaca($event)"
->
-</label>
-
-<label>
-Frecuencia respiratoria
-<input
-type="number"
-[value]="frecuenciaRespiratoria()"
-(input)="cambiarFrecuenciaRespiratoria($event)"
->
-</label>
-
-</div>
-
-<div class="acciones-signos">
-
-<button
-type="button"
-class="btn btn-secundario"
-(click)="cancelarActualizacion()"
->
-Cancelar
-</button>
+            <label>
+              Veterinario
 
-<button
-type="button"
-class="btn btn-primary"
-(click)="guardarSignos()"
->
-Guardar signos
-</button>
+              <input
+                type="text"
+                placeholder="Ej. Dra. Andrea Ruiz"
+                [value]="veterinarioEvolucion()"
+                (input)="cambiarVeterinario($event)"
+              >
+            </label>
 
-</div>
+            <label>
+              Nota de evolución
 
-</div>
+              <textarea
+                rows="4"
+                placeholder="Describe la evolución del paciente..."
+                [value]="notaEvolucion()"
+                (input)="cambiarNotaEvolucion($event)"
+              ></textarea>
+            </label>
 
-}
+          </div>
 
-<div>
+          <div class="acciones-signos">
 
-<h3 style="margin:0 0 12px; font-size:1.1rem;">
-Signos vitales
-</h3>
+            <button
+              type="button"
+              class="btn btn-secundario"
+              (click)="cerrarEvolucion()"
+            >
+              Cancelar
+            </button>
 
-<div class="grid-3">
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="guardarEvolucion()"
+            >
+              Guardar evolución
+            </button>
 
-<div class="card signo-vital">
+          </div>
 
-<span
-class="icono"
-style="color:var(--color-error);"
->
-🌡
-</span>
+        </section>
 
-<p class="texto-mini" style="margin:0;">
-Temperatura
-</p>
+      }
 
-<p class="valor" style="margin:0;">
-{{ internamiento.temperatura }}
-<span style="font-size:1rem; font-weight:400;">
-°C
-</span>
-</p>
+      <section class="grid-hospitalizacion">
 
-</div>
+        <div class="columna-principal">
 
-<div class="card signo-vital">
+          <div>
 
-<span
-class="icono"
-style="color:var(--color-primary);"
->
-❤
-</span>
+            <h3 class="titulo-seccion">
+              Signos vitales
+            </h3>
 
-<p class="texto-mini" style="margin:0;">
-Frec. cardíaca
-</p>
+            <div class="grid-3">
 
-<p class="valor" style="margin:0;">
-{{ internamiento.frecuenciaCardiaca }}
-<span style="font-size:1rem; font-weight:400;">
-lpm
-</span>
-</p>
+              <div class="card signo-vital">
 
-</div>
+                <span class="icono">
+                  🌡
+                </span>
 
-<div class="card signo-vital">
+                <p class="texto-mini">
+                  Temperatura
+                </p>
 
-<span
-class="icono"
-style="color:var(--color-info-text);"
->
-💨
-</span>
+                <p class="valor">
+                  {{ internamiento.temperatura }}
+                  <span>°C</span>
+                </p>
 
-<p class="texto-mini" style="margin:0;">
-Frec. respiratoria
-</p>
+              </div>
 
-<p class="valor" style="margin:0;">
-{{ internamiento.frecuenciaRespiratoria }}
-<span style="font-size:1rem; font-weight:400;">
-rpm
-</span>
-</p>
+              <div class="card signo-vital">
 
-</div>
+                <span class="icono">
+                  ❤
+                </span>
 
-</div>
+                <p class="texto-mini">
+                  Frec. cardíaca
+                </p>
 
-</div>
+                <p class="valor">
+                  {{ internamiento.frecuenciaCardiaca }}
+                  <span>lpm</span>
+                </p>
 
-</div>
+              </div>
 
-<aside class="card">
+              <div class="card signo-vital">
 
-<div
-style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"
->
+                <span class="icono">
+                  💨
+                </span>
 
-<h3 style="margin:0; font-size:1.1rem;">
-Tratamientos - hoy
-</h3>
+                <p class="texto-mini">
+                  Frec. respiratoria
+                </p>
 
-<span class="icono" style="color:var(--color-primary);">
-💊
-</span>
+                <p class="valor">
+                  {{ internamiento.frecuenciaRespiratoria }}
+                  <span>rpm</span>
+                </p>
 
-</div>
+              </div>
 
-@for (tratamiento of internamiento.tratamientos; track tratamiento.id) {
+            </div>
 
-<div
-class="tratamiento-item"
-[class.hecho]="tratamiento.realizado"
->
+          </div>
 
-<input
-type="checkbox"
-[checked]="tratamiento.realizado"
-(change)="cambiarTratamiento(tratamiento.id, $event)"
->
+          <div>
 
-<div>
+            <div class="encabezado-evoluciones">
 
-<p
-class="titulo-t"
-style="margin:0; font-size:0.9rem;"
->
-{{ tratamiento.nombre }}
-</p>
+              <div>
+                <h3>Evolución diaria</h3>
 
-<p
-class="texto-secundario"
-style="margin:0; font-size:0.8rem;"
->
-{{ tratamiento.horario }} - {{ tratamiento.detalle }}
-</p>
+                <p>
+                  Seguimiento clínico ordenado de más reciente a más antiguo.
+                </p>
+              </div>
 
-</div>
+              <span class="contador-evoluciones">
+                {{ evolucionesOrdenadas().length }}
+              </span>
 
-</div>
+            </div>
 
-}
+            @if (evolucionesOrdenadas().length) {
 
-</aside>
+              <div class="lista-evoluciones">
 
-</section>
+                @for (evolucion of evolucionesOrdenadas(); track evolucion.id) {
 
-}
+                  <article class="card evolucion">
 
-}
+                    <div class="evolucion-cabecera">
+
+                      <div>
+
+                        <strong>
+                          {{ formatearFecha(evolucion.fecha) }}
+                        </strong>
+
+                        <span>
+                          {{ evolucion.hora }}
+                        </span>
+
+                      </div>
+
+                      <span class="veterinario">
+                        {{ evolucion.veterinario }}
+                      </span>
+
+                    </div>
+
+                    <p>
+                      {{ evolucion.nota }}
+                    </p>
+
+                  </article>
+
+                }
+
+              </div>
+
+            } @else {
+
+              <div class="card sin-evoluciones">
+
+                <span>📋</span>
+
+                <p>
+                  No hay evoluciones registradas para este internamiento.
+                </p>
+
+              </div>
+
+            }
+
+          </div>
+
+        </div>
+
+        <aside class="card tratamientos">
+
+          <div class="cabecera-tratamientos">
+
+            <h3>
+              Tratamientos - hoy
+            </h3>
+
+            <span>
+              💊
+            </span>
+
+          </div>
+
+          @for (tratamiento of internamiento.tratamientos; track tratamiento.id) {
+
+            <div
+              class="tratamiento-item"
+              [class.hecho]="tratamiento.realizado"
+            >
+
+              <input
+                type="checkbox"
+                [checked]="tratamiento.realizado"
+                [disabled]="internamiento.estado === 'Alta'"
+                (change)="cambiarTratamiento(tratamiento.id, $event)"
+              >
+
+              <div>
+
+                <p class="titulo-t">
+                  {{ tratamiento.nombre }}
+                </p>
+
+                <p class="texto-secundario">
+                  {{ tratamiento.horario }} - {{ tratamiento.detalle }}
+                </p>
+
+              </div>
+
+            </div>
+
+          }
+
+          @if (internamiento.estado === 'Alta') {
+
+            <div class="paciente-alta">
+              ✓ Paciente dado de alta
+            </div>
+
+          }
+
+        </aside>
+
+      </section>
+
+    }
+
+  }
 
 </main>

@@ -4,104 +4,210 @@
     <div>
       <h1 class="titulo-pagina">Recordatorios</h1>
       <p class="subtitulo-pagina">
-        Consulta las próximas citas programadas para tus mascotas.
+        Consulta tus próximas citas y refuerzos de vacunas.
       </p>
     </div>
 
     <div class="contador-recordatorios">
-      <span>{{ recordatorios().length }}</span>
-      <p>Próximas citas</p>
+      <span>{{ totalPendientes() }}</span>
+      <p>Pendientes</p>
     </div>
   </section>
 
-  @if (recordatorios().length) {
+  <section class="seccion-recordatorios">
 
-    <section class="lista-recordatorios">
+    <div class="titulo-seccion">
+      <div>
+        <h2>Próximas citas</h2>
+        <p>Recordatorios de tus atenciones veterinarias programadas.</p>
+      </div>
+      <span class="cantidad">{{ recordatorios().length }}</span>
+    </div>
 
-      @for (cita of recordatorios(); track cita.id) {
+    @if (recordatorios().length) {
 
-        <article class="card recordatorio">
+      <div class="lista-recordatorios">
 
-          <div class="recordatorio-icono">
-            📅
-          </div>
+        @for (cita of recordatorios(); track cita.id) {
 
-          <div class="recordatorio-contenido">
+          <article
+            class="card recordatorio"
+            [class.recordatorio-urgente]="dentroDe24Horas(cita.fecha, cita.hora)"
+          >
 
-            <div class="recordatorio-superior">
+            <div class="recordatorio-icono">
+              📅
+            </div>
 
-              <div>
-                <span class="badge badge-ok">
-                  {{ textoTiempo(cita.fecha) }}
+            <div class="recordatorio-contenido">
+
+              <div class="recordatorio-superior">
+
+                <div>
+                  <span
+                    class="badge"
+                    [class.badge-urgente]="dentroDe24Horas(cita.fecha, cita.hora)"
+                    [class.badge-ok]="!dentroDe24Horas(cita.fecha, cita.hora)"
+                  >
+                    {{ textoTiempo(cita.fecha, cita.hora) }}
+                  </span>
+
+                  <h2>{{ cita.mascotaNombre }}</h2>
+
+                  @if (dentroDe24Horas(cita.fecha, cita.hora)) {
+                    <p class="aviso-24h">
+                      🔔 Tu cita comienza dentro de las próximas 24 horas.
+                    </p>
+                  }
+                </div>
+
+                <span class="estado">
+                  {{ cita.estado }}
                 </span>
 
-                <h2>{{ cita.mascotaNombre }}</h2>
               </div>
 
-              <span class="estado">
-                {{ cita.estado }}
-              </span>
+              <div class="recordatorio-datos">
+
+                <div>
+                  <span>Servicio</span>
+                  <strong>{{ cita.servicio }}</strong>
+                </div>
+
+                <div>
+                  <span>Fecha</span>
+                  <strong>{{ fechaLegible(cita.fecha) }}</strong>
+                </div>
+
+                <div>
+                  <span>Hora</span>
+                  <strong>{{ cita.hora }}</strong>
+                </div>
+
+              </div>
+
+              <div class="motivo">
+                <span>Motivo de consulta</span>
+                <p>{{ cita.motivoConsulta || 'Sin motivo registrado' }}</p>
+              </div>
+
+              <div class="acciones">
+                <button
+                  type="button"
+                  class="btn btn-secundario"
+                  (click)="cancelar(cita.id)"
+                >
+                  Cancelar cita
+                </button>
+              </div>
 
             </div>
 
-            <div class="recordatorio-datos">
+          </article>
 
-              <div>
-                <span>Servicio</span>
-                <strong>{{ cita.servicio }}</strong>
-              </div>
+        }
 
-              <div>
-                <span>Fecha</span>
-                <strong>{{ fechaLegible(cita.fecha) }}</strong>
-              </div>
-
-              <div>
-                <span>Hora</span>
-                <strong>{{ cita.hora }}</strong>
-              </div>
-
-            </div>
-
-            <div class="motivo">
-              <span>Motivo de consulta</span>
-              <p>{{ cita.motivoConsulta || 'Sin motivo registrado' }}</p>
-            </div>
-
-            <div class="acciones">
-              <button
-                type="button"
-                class="btn btn-secundario"
-                (click)="cancelar(cita.id)"
-              >
-                Cancelar cita
-              </button>
-            </div>
-
-          </div>
-
-        </article>
-
-      }
-
-    </section>
-
-  } @else {
-
-    <section class="card estado-vacio">
-
-      <div class="vacio-icono">
-        🔔
       </div>
 
-      <h2>No tienes recordatorios pendientes</h2>
+    } @else {
 
-      <p>
-        Cuando registres una próxima cita veterinaria aparecerá automáticamente aquí.
-      </p>
+      <div class="card estado-vacio estado-vacio-pequeno">
+        <div class="vacio-icono">📅</div>
+        <h2>No tienes citas pendientes</h2>
+        <p>Las próximas citas aparecerán automáticamente aquí.</p>
+      </div>
 
-    </section>
+    }
 
-  }
+  </section>
+
+  <section class="seccion-recordatorios">
+
+    <div class="titulo-seccion">
+      <div>
+        <h2>Refuerzos de vacunas</h2>
+        <p>Vacunas vencidas o con próxima dosis dentro de 30 días.</p>
+      </div>
+      <span class="cantidad">{{ refuerzos().length }}</span>
+    </div>
+
+    @if (refuerzos().length) {
+
+      <div class="lista-recordatorios">
+
+        @for (vacuna of refuerzos(); track vacuna.id) {
+
+          <article
+            class="card recordatorio recordatorio-vacuna"
+            [class.recordatorio-vencido]="refuerzoVencido(vacuna.proximaDosis)"
+          >
+
+            <div class="recordatorio-icono icono-vacuna">
+              💉
+            </div>
+
+            <div class="recordatorio-contenido">
+
+              <div class="recordatorio-superior">
+
+                <div>
+                  <span
+                    class="badge"
+                    [class.badge-vencida]="refuerzoVencido(vacuna.proximaDosis)"
+                    [class.badge-vacuna]="!refuerzoVencido(vacuna.proximaDosis)"
+                  >
+                    {{ textoRefuerzo(vacuna.proximaDosis) }}
+                  </span>
+
+                  <h2>{{ nombreMascota(vacuna.mascotaId) }}</h2>
+                </div>
+
+                <span
+                  class="estado"
+                  [class.estado-vencido]="refuerzoVencido(vacuna.proximaDosis)"
+                >
+                  {{ refuerzoVencido(vacuna.proximaDosis) ? 'Vencida' : 'Próxima' }}
+                </span>
+
+              </div>
+
+              <div class="recordatorio-datos datos-vacuna">
+
+                <div>
+                  <span>Vacuna</span>
+                  <strong>{{ vacuna.nombre }}</strong>
+                </div>
+
+                <div>
+                  <span>Última aplicación</span>
+                  <strong>{{ fechaLegible(vacuna.fechaAplicacion) }}</strong>
+                </div>
+
+                <div>
+                  <span>Próxima dosis</span>
+                  <strong>{{ fechaLegible(vacuna.proximaDosis) }}</strong>
+                </div>
+
+              </div>
+
+            </div>
+
+          </article>
+
+        }
+
+      </div>
+
+    } @else {
+
+      <div class="card estado-vacio estado-vacio-pequeno">
+        <div class="vacio-icono">💉</div>
+        <h2>No hay refuerzos próximos</h2>
+        <p>No existen vacunas vencidas ni refuerzos programados para los próximos 30 días.</p>
+      </div>
+
+    }
+
+  </section>
 
 </main>
