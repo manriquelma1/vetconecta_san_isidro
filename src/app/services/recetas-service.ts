@@ -1,6 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Receta } from '../models/receta';
-import { leer } from '../utils/almacenamiento';
+import { crearId, guardar, leer } from '../utils/almacenamiento';
+import { AuthService } from './auth-service';
 
 const CLAVE_RECETAS = 'vetconecta.recetas';
 
@@ -47,9 +48,47 @@ const RECETAS_INICIALES: Receta[] = [
   providedIn: 'root'
 })
 export class RecetasService {
+  private readonly auth = inject(AuthService);
+
   private readonly _recetas = signal<Receta[]>(
     leer<Receta[]>(CLAVE_RECETAS, RECETAS_INICIALES)
   );
 
   readonly recetas = this._recetas.asReadonly();
+
+  /**
+   * Emite una receta. Solo el personal veterinario puede recetar:
+   * devuelve null si quien tiene la sesion abierta no lo es.
+   */
+  agregarReceta(datos: Omit<Receta, 'id'>): Receta | null {
+    if (!this.auth.esPersonal()) {
+      return null;
+    }
+
+    const receta: Receta = {
+      ...datos,
+      id: crearId(),
+      medicamentos: datos.medicamentos.map((medicamento) => ({
+        ...medicamento,
+        id: crearId()
+      }))
+    };
+
+    this._recetas.update((lista) => [...lista, receta]);
+    guardar(CLAVE_RECETAS, this._recetas());
+
+    return receta;
+  }
+
+  eliminarReceta(id: string): void {
+    if (!this.auth.esPersonal()) {
+      return;
+    }
+
+    this._recetas.update((lista) =>
+      lista.filter((receta) => receta.id !== id)
+    );
+
+    guardar(CLAVE_RECETAS, this._recetas());
+  }
 }

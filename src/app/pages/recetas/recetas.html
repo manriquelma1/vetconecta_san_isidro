@@ -11,10 +11,28 @@ placeholder="Buscar por mascota o medicamento..."
 </section>
 
 <section class="encabezado-recetas">
+<div class="cabecera-acciones">
+<div>
 <h1 class="titulo-pagina">Recetas digitales</h1>
 <p class="subtitulo-pagina">
+@if (esPersonal()) {
+Emite y consulta las recetas de los pacientes de la clínica.
+} @else {
 Consulta los medicamentos y tratamientos indicados para tus mascotas.
+}
 </p>
+</div>
+
+@if (esPersonal()) {
+<button class="btn btn-primary" (click)="abrirForm()">
+<span class="icono" style="font-size:18px;">💊</span>Nueva receta
+</button>
+}
+</div>
+
+@if (aviso()) {
+<p class="aviso-receta" role="status">{{ aviso() }}</p>
+}
 </section>
 
 @if (recetas().length) {
@@ -59,6 +77,12 @@ Vigente
 }
 
 </div>
+
+@if (esPersonal()) {
+<div class="acciones-receta">
+<button class="btn btn-peligro" (click)="eliminarReceta(receta.id)">Eliminar receta</button>
+</div>
+}
 
 <div class="fechas-receta">
 
@@ -115,6 +139,101 @@ Medicamentos
 <p>No existen recetas que coincidan con la búsqueda.</p>
 </section>
 
+}
+
+@if (esPersonal()) {
+<dialog
+#dialogoReceta
+class="modal-receta"
+aria-labelledby="titulo-modal-receta"
+(close)="mostrarForm.set(false)"
+(click)="cerrarSiFondo($event)"
+>
+
+<form class="form-receta" (submit)="$event.preventDefault(); guardarReceta()">
+
+<div class="modal-cabecera">
+<h2 id="titulo-modal-receta">Emitir receta</h2>
+<button type="button" class="modal-cerrar" aria-label="Cerrar" (click)="mostrarForm.set(false)">&times;</button>
+</div>
+
+<div class="modal-cuerpo">
+
+<div class="grid-2">
+
+<div class="campo">
+<label for="r-mascota">Mascota</label>
+<select id="r-mascota" [value]="fMascotaId()" (change)="cambiarCampo('fMascotaId', $event)">
+@for (mascota of mascotas(); track mascota.id) {
+<option [value]="mascota.id">{{ mascota.nombre }}</option>
+}
+</select>
+</div>
+
+<div class="campo">
+<label for="r-vet">Veterinario</label>
+<input id="r-vet" type="text" placeholder="Dr. Carlos Mendoza"
+[value]="fVeterinario()" (input)="cambiarCampo('fVeterinario', $event)">
+</div>
+
+<div class="campo">
+<label for="r-emision">Fecha de emisión</label>
+<input id="r-emision" type="date" [value]="fEmision()" (input)="cambiarCampo('fEmision', $event)">
+</div>
+
+<div class="campo">
+<label for="r-fin">Fin del tratamiento</label>
+<input id="r-fin" type="date" [min]="fEmision()" [value]="fFin()" (input)="cambiarCampo('fFin', $event)">
+</div>
+
+</div>
+
+<p class="texto-mini" style="margin:6px 0 8px;">Medicamentos</p>
+
+@for (medicamento of fMedicamentos(); track $index) {
+<div class="fila-medicamento">
+
+<div class="campo">
+<label [attr.for]="'r-med-' + $index">Medicamento</label>
+<input [id]="'r-med-' + $index" type="text" placeholder="Amoxicilina 250mg"
+[value]="medicamento.nombre" (input)="cambiarMedicamento($index, 'nombre', $event)">
+</div>
+
+<div class="campo">
+<label [attr.for]="'r-dosis-' + $index">Dosis</label>
+<input [id]="'r-dosis-' + $index" type="text" placeholder="1 tableta cada 12 horas"
+[value]="medicamento.dosis" (input)="cambiarMedicamento($index, 'dosis', $event)">
+</div>
+
+<div class="campo">
+<label [attr.for]="'r-dur-' + $index">Duración</label>
+<input [id]="'r-dur-' + $index" type="text" placeholder="7 días"
+[value]="medicamento.duracion" (input)="cambiarMedicamento($index, 'duracion', $event)">
+</div>
+
+<button type="button" class="quitar-medicamento" (click)="quitarMedicamento($index)"
+[disabled]="fMedicamentos().length === 1"
+[attr.aria-label]="'Quitar medicamento ' + ($index + 1)">&times;</button>
+
+</div>
+}
+
+<button type="button" class="btn btn-secundario" (click)="agregarMedicamento()">+ Agregar medicamento</button>
+
+@if (errorReceta()) {
+<p class="aviso-error-receta" role="alert">{{ errorReceta() }}</p>
+}
+
+</div>
+
+<div class="modal-pie">
+<button type="button" class="btn btn-secundario" (click)="mostrarForm.set(false)">Cancelar</button>
+<button type="submit" class="btn btn-primary">Emitir receta</button>
+</div>
+
+</form>
+
+</dialog>
 }
 
 </main>
