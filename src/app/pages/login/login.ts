@@ -22,9 +22,10 @@ export class Login {
   protected readonly verClave = signal(false);
   protected readonly error = signal('');
   protected readonly exito = signal('');
+  protected readonly cargando = signal(false);
   protected readonly correoPersonal = CORREO_PERSONAL_DEMO;
 
-  protected ingresar(): void {
+  protected async ingresar(): Promise<void> {
     const correo = this.correo().trim();
     const clave = this.clave();
 
@@ -33,17 +34,20 @@ export class Login {
       return;
     }
 
-    const usuario = this.auth.ingresar(correo, clave);
+    this.cargando.set(true);
 
-    if (!usuario) {
+    try {
+      await this.auth.ingresar(correo, clave);
+      this.router.navigate([this.auth.inicio()]);
+    } catch {
+      // El backend nunca dice cual dato fallo (HU-09): mismo mensaje siempre.
       this.error.set('Correo o contraseña incorrectos.');
-      return;
+    } finally {
+      this.cargando.set(false);
     }
-
-    this.router.navigate([this.auth.inicio()]);
   }
 
-  protected registrar(): void {
+  protected async registrar(): Promise<void> {
     const nombre = this.nombre().trim();
     const correo = this.correo().trim();
     const clave = this.clave();
@@ -69,24 +73,29 @@ export class Login {
       return;
     }
 
-    if (this.auth.correoExiste(correo)) {
-      this.error.set('No se pudo crear la cuenta con los datos ingresados.');
-      return;
+    this.cargando.set(true);
+
+    try {
+      await this.auth.registrar(nombre, correo, clave);
+      this.router.navigate([this.auth.inicio()]);
+    } catch (error) {
+      this.error.set(error instanceof Error ? error.message : 'No se pudo crear la cuenta.');
+    } finally {
+      this.cargando.set(false);
     }
-
-    const usuario = this.auth.registrar(nombre, correo, clave);
-
-    if (!usuario) {
-      this.error.set('No se pudo crear la cuenta.');
-      return;
-    }
-
-    this.router.navigate([this.auth.inicio()]);
   }
 
-  protected ingresarConGoogle(): void {
-    this.auth.ingresarConGoogle();
-    this.router.navigate([this.auth.inicio()]);
+  protected async ingresarConGoogle(): Promise<void> {
+    this.cargando.set(true);
+
+    try {
+      await this.auth.ingresarConGoogle();
+      this.router.navigate([this.auth.inicio()]);
+    } catch {
+      this.error.set('No se pudo iniciar sesión con Google en este entorno.');
+    } finally {
+      this.cargando.set(false);
+    }
   }
 
   protected cambiarModo(): void {

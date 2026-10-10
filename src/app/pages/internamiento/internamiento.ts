@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CitasService } from '../../services/citas-service';
 import { InternamientoService } from '../../services/internamiento-service';
 
@@ -15,9 +15,9 @@ export class Internamiento {
   protected readonly internamientos =
     this.internamientoService.internamientos;
 
-  protected readonly internamientoSeleccionadoId = signal(
-    this.internamientoService.internamientos()[0]?.id ?? ''
-  );
+  // Los internamientos llegan por HTTP: vacio al construir, se elige el primero
+  // en el effect() del constructor apenas la lista tenga datos.
+  protected readonly internamientoSeleccionadoId = signal('');
 
   protected readonly editandoSignos = signal(false);
   protected readonly mostrandoEvolucion = signal(false);
@@ -64,6 +64,17 @@ export class Internamiento {
         )
     );
   });
+
+  constructor() {
+    // Selecciona el primer internamiento apenas la lista llega del backend.
+    effect(() => {
+      const [primero] = this.internamientos();
+
+      if (primero && !this.internamientoSeleccionadoId()) {
+        this.internamientoSeleccionadoId.set(primero.id);
+      }
+    });
+  }
 
   protected seleccionarInternamiento(id: string): void {
     this.internamientoSeleccionadoId.set(id);
@@ -114,7 +125,7 @@ export class Internamiento {
     );
   }
 
-  protected guardarSignos(): void {
+  protected async guardarSignos(): Promise<void> {
     const internamiento = this.internamientoSeleccionado();
     const temperatura = Number(this.temperatura());
     const frecuenciaCardiaca = Number(
@@ -161,19 +172,26 @@ export class Internamiento {
       return;
     }
 
-    this.internamientoService.actualizarSignos(
-      internamiento.id,
-      temperatura,
-      frecuenciaCardiaca,
-      frecuenciaRespiratoria
-    );
+    try {
+      await this.internamientoService.actualizarSignos(
+        internamiento.id,
+        temperatura,
+        frecuenciaCardiaca,
+        frecuenciaRespiratoria
+      );
 
-    this.editandoSignos.set(false);
+      this.editandoSignos.set(false);
 
-    this.mensaje.set({
-      texto: 'Signos vitales actualizados correctamente.',
-      error: false
-    });
+      this.mensaje.set({
+        texto: 'Signos vitales actualizados correctamente.',
+        error: false
+      });
+    } catch (error) {
+      this.mensaje.set({
+        texto: error instanceof Error ? error.message : 'No se pudieron actualizar los signos vitales.',
+        error: true
+      });
+    }
   }
 
   protected abrirEvolucion(): void {
@@ -204,7 +222,7 @@ export class Internamiento {
     );
   }
 
-  protected guardarEvolucion(): void {
+  protected async guardarEvolucion(): Promise<void> {
     const internamiento = this.internamientoSeleccionado();
     const nota = this.notaEvolucion().trim();
     const veterinario = this.veterinarioEvolucion().trim();
@@ -231,67 +249,90 @@ export class Internamiento {
 
     const ahora = new Date();
 
-    this.internamientoService.agregarEvolucion(
-      internamiento.id,
-      {
-        fecha: this.fechaLocal(ahora),
-        hora: ahora.toLocaleTimeString('es-PE', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        }),
-        nota,
-        veterinario
-      }
-    );
+    try {
+      await this.internamientoService.agregarEvolucion(
+        internamiento.id,
+        {
+          fecha: this.fechaLocal(ahora),
+          hora: ahora.toLocaleTimeString('es-PE', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }),
+          nota,
+          veterinario
+        }
+      );
 
-    this.mostrandoEvolucion.set(false);
+      this.mostrandoEvolucion.set(false);
 
-    this.mensaje.set({
-      texto: 'Evolución registrada correctamente.',
-      error: false
-    });
+      this.mensaje.set({
+        texto: 'Evolución registrada correctamente.',
+        error: false
+      });
+    } catch (error) {
+      this.mensaje.set({
+        texto: error instanceof Error ? error.message : 'No se pudo registrar la evolución.',
+        error: true
+      });
+    }
   }
 
-  protected darAlta(): void {
+  protected async darAlta(): Promise<void> {
     const internamiento = this.internamientoSeleccionado();
 
     if (!internamiento || internamiento.estado === 'Alta') {
       return;
     }
 
-    this.internamientoService.darAlta(
-      internamiento.id,
-      this.fechaLocal(new Date())
-    );
+    try {
+      await this.internamientoService.darAlta(
+        internamiento.id,
+        this.fechaLocal(new Date())
+      );
 
-    this.editandoSignos.set(false);
-    this.mostrandoEvolucion.set(false);
+      this.editandoSignos.set(false);
+      this.mostrandoEvolucion.set(false);
 
-    this.mensaje.set({
-      texto: 'El paciente fue dado de alta correctamente.',
-      error: false
-    });
+      this.mensaje.set({
+        texto: 'El paciente fue dado de alta correctamente.',
+        error: false
+      });
+    } catch (error) {
+      this.mensaje.set({
+        texto: error instanceof Error ? error.message : 'No se pudo dar de alta al paciente.',
+        error: true
+      });
+    }
   }
 
-  protected cambiarTratamiento(
+  protected async cambiarTratamiento(
     tratamientoId: string,
     evento: Event
-  ): void {
+  ): Promise<void> {
     const internamiento = this.internamientoSeleccionado();
 
     if (!internamiento || internamiento.estado === 'Alta') {
       return;
     }
 
-    const realizado =
-      (evento.target as HTMLInputElement).checked;
+    const casilla = evento.target as HTMLInputElement;
+    const realizado = casilla.checked;
 
-    this.internamientoService.cambiarEstadoTratamiento(
-      internamiento.id,
-      tratamientoId,
-      realizado
-    );
+    try {
+      await this.internamientoService.cambiarEstadoTratamiento(
+        internamiento.id,
+        tratamientoId,
+        realizado
+      );
+    } catch (error) {
+      // El backend no acepto el cambio: revierte la casilla y avisa.
+      casilla.checked = !realizado;
+      this.mensaje.set({
+        texto: error instanceof Error ? error.message : 'No se pudo actualizar el tratamiento.',
+        error: true
+      });
+    }
   }
 
   protected formatearFecha(fecha: string): string {

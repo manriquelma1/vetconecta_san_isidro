@@ -1,157 +1,81 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { Usuario, UsuarioRegistrado } from '../models/usuario';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { RespuestaAuth, Usuario } from '../models/usuario';
 import { borrar, guardar, leer } from '../utils/almacenamiento';
+import { extraerMensajeError } from '../utils/http-error';
+import { environment } from '../../environments/environment';
 
-const CLAVE_SESION = 'vetconecta.sesion';
-const CLAVE_USUARIOS = 'vetconecta.usuarios';
+const CLAVE_TOKEN = 'vetconecta.token';
+const CLAVE_USUARIO = 'vetconecta.usuario';
+
+/**
+ * Cuenta de demostracion que ya existe en el backend (sembrada por EF Core).
+ * "Ingresar con Google" ya no puede fabricar una sesion local: sin un JWT real
+ * del backend, cualquier llamada a la API fallaria. En su lugar, es un atajo
+ * que inicia sesion de verdad con esta cuenta.
+ */
+const CORREO_GOOGLE_DEMO = 'julian.campos@gmail.com';
+const CLAVE_GOOGLE_DEMO = 'Cliente123';
 
 export const CORREO_PERSONAL_DEMO = 'personal@vetconecta.pe';
 
-const CUENTA_GOOGLE: Usuario = {
-  nombre: 'Julián Campos',
-  correo: 'julian.campos@gmail.com',
-  proveedor: 'google',
-  rol: 'propietario',
-};
+function restaurarUsuario(): Usuario | null {
+  const token = leer<string | null>(CLAVE_TOKEN, null);
+  const usuario = leer<Usuario | null>(CLAVE_USUARIO, null);
 
-const PERSONAL_DEMO: UsuarioRegistrado = {
-  nombre: 'Personal veterinario',
-  correo: CORREO_PERSONAL_DEMO,
-  clave: 'Vet12345',
-  proveedor: 'correo',
-  rol: 'personal',
-};
-
-function restaurarSesion(): Usuario | null {
-  const usuario = leer<Usuario | null>(CLAVE_SESION, null);
-
-  if (
-    !usuario ||
-    typeof usuario.correo !== 'string' ||
-    typeof usuario.nombre !== 'string'
-  ) {
+  if (!token || !usuario || typeof usuario.correo !== 'string') {
     return null;
   }
 
-  return {
-    ...usuario,
-    correo: usuario.correo.trim().toLowerCase(),
-    rol: usuario.rol === 'personal' ? 'personal' : 'propietario',
-  };
+  return usuario;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly _usuario = signal<Usuario | null>(restaurarSesion());
+  private readonly http = inject(HttpClient);
+
+  private readonly _usuario = signal<Usuario | null>(restaurarUsuario());
 
   readonly usuario = this._usuario.asReadonly();
   readonly autenticado = computed(() => this._usuario() !== null);
   readonly esPersonal = computed(() => this._usuario()?.rol === 'personal');
-  readonly inicio = computed(() =>
-    this.esPersonal() ? '/gestion-citas' : '/dashboard'
-  );
-  readonly nombreRol = computed(() =>
-    this.esPersonal() ? 'Personal veterinario' : 'Propietario'
-  );
+  readonly inicio = computed(() => (this.esPersonal() ? '/gestion-citas' : '/dashboard'));
+  readonly nombreRol = computed(() => (this.esPersonal() ? 'Personal veterinario' : 'Propietario'));
 
-  constructor() {
-    this.inicializarPersonal();
+  /** Lanza un Error con el mensaje del backend si las credenciales no son validas. */
+  async ingresar(correo: string, clave: string): Promise<void> {
+    await this.autenticar('login', { correo: correo.trim(), clave });
   }
 
-  registrar(
-    nombre: string,
-    correo: string,
-    clave: string
-  ): Usuario | null {
-    const nombreLimpio = nombre.trim();
-    const correoLimpio = correo.trim().toLowerCase();
-
-    const usuarios = this.obtenerUsuarios();
-
-    const existe = usuarios.some(
-      (usuario) => usuario.correo === correoLimpio
-    );
-
-    if (existe) {
-      return null;
-    }
-
-    const nuevoUsuario: UsuarioRegistrado = {
-      nombre: nombreLimpio,
-      correo: correoLimpio,
-      clave,
-      proveedor: 'correo',
-      rol: 'propietario',
-    };
-
-    usuarios.push(nuevoUsuario);
-    guardar(CLAVE_USUARIOS, usuarios);
-
-    return this.abrirSesion(this.sinClave(nuevoUsuario));
+  /** Lanza un Error con el mensaje del backend (ej. correo ya registrado). */
+  async registrar(nombre: string, correo: string, clave: string): Promise<void> {
+    await this.autenticar('registro', { nombre: nombre.trim(), correo: correo.trim(), clave });
   }
 
-  ingresar(correo: string, clave: string): Usuario | null {
-    const correoLimpio = correo.trim().toLowerCase();
-
-    const usuario = this.obtenerUsuarios().find(
-      (item) =>
-        item.correo === correoLimpio &&
-        item.clave === clave
-    );
-
-    if (!usuario) {
-      return null;
-    }
-
-    return this.abrirSesion(this.sinClave(usuario));
-  }
-
-  ingresarConGoogle(): Usuario {
-    return this.abrirSesion(CUENTA_GOOGLE);
-  }
-
-  correoExiste(correo: string): boolean {
-    const correoLimpio = correo.trim().toLowerCase();
-
-    return this.obtenerUsuarios().some(
-      (usuario) => usuario.correo === correoLimpio
-    );
+  async ingresarConGoogle(): Promise<void> {
+    await this.ingresar(CORREO_GOOGLE_DEMO, CLAVE_GOOGLE_DEMO);
   }
 
   salir(): void {
     this._usuario.set(null);
-    borrar(CLAVE_SESION);
+    borrar(CLAVE_TOKEN);
+    borrar(CLAVE_USUARIO);
   }
 
-  private obtenerUsuarios(): UsuarioRegistrado[] {
-    return leer<UsuarioRegistrado[]>(CLAVE_USUARIOS, []);
-  }
+  private async autenticar(ruta: 'login' | 'registro', datos: unknown): Promise<void> {
+    try {
+      const respuesta = await firstValueFrom(
+        this.http.post<RespuestaAuth>(`${environment.apiUrl}/auth/${ruta}`, datos)
+      );
 
-  private inicializarPersonal(): void {
-    const usuarios = this.obtenerUsuarios();
+      const usuario: Usuario = { nombre: respuesta.nombre, correo: respuesta.correo, rol: respuesta.rol };
 
-    const existe = usuarios.some(
-      (usuario) => usuario.correo === CORREO_PERSONAL_DEMO
-    );
-
-    if (!existe) {
-      usuarios.push(PERSONAL_DEMO);
-      guardar(CLAVE_USUARIOS, usuarios);
+      this._usuario.set(usuario);
+      guardar(CLAVE_TOKEN, respuesta.token);
+      guardar(CLAVE_USUARIO, usuario);
+    } catch (error) {
+      throw new Error(extraerMensajeError(error));
     }
-  }
-
-  private sinClave(usuario: UsuarioRegistrado): Usuario {
-    return {
-      nombre: usuario.nombre,
-      correo: usuario.correo,
-      proveedor: usuario.proveedor,
-      rol: usuario.rol,
-    };
-  }
-
-  private abrirSesion(usuario: Usuario): Usuario {
-    this._usuario.set(usuario);
-    guardar(CLAVE_SESION, usuario);
-    return usuario;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Producto } from '../../models/producto';
 import { Inventario as InventarioService } from '../../services/inventario';
@@ -14,31 +14,41 @@ export class Inventario {
   private inventarioService = inject(InventarioService);
 
   terminoBusqueda = '';
-  productos: Producto[] = this.inventarioService.obtenerProductos();
+  productos = signal<Producto[]>([]);
 
   mensaje = '';
   mensajeError = false;
 
-  buscar(): void {
-    this.productos =
-      this.inventarioService.buscarProductos(this.terminoBusqueda);
+  constructor() {
+    this.cargar();
+  }
+
+  private async cargar(): Promise<void> {
+    this.productos.set(await this.inventarioService.obtenerProductos());
+  }
+
+  async buscar(): Promise<void> {
+    this.productos.set(await this.inventarioService.buscarProductos(this.terminoBusqueda));
   }
 
   limpiarBusqueda(): void {
     this.terminoBusqueda = '';
-    this.productos = this.inventarioService.obtenerProductos();
     this.mensaje = '';
+    this.cargar();
   }
 
-  vender(producto: Producto): void {
-    const ventaRealizada =
-      this.inventarioService.venderProducto(producto.id, 1);
+  async vender(producto: Producto): Promise<void> {
+    try {
+      const actualizado = await this.inventarioService.venderProducto(producto.id, 1);
 
-    if (ventaRealizada) {
-      this.mensaje = `Venta registrada: ${producto.nombre}. Stock actualizado: ${producto.stock}.`;
+      this.productos.update((lista) =>
+        lista.map((item) => (item.id === actualizado.id ? actualizado : item))
+      );
+
+      this.mensaje = `Venta registrada: ${actualizado.nombre}. Stock actualizado: ${actualizado.stock}.`;
       this.mensajeError = false;
-    } else {
-      this.mensaje = `No hay stock disponible para ${producto.nombre}.`;
+    } catch (error) {
+      this.mensaje = error instanceof Error ? error.message : `No hay stock disponible para ${producto.nombre}.`;
       this.mensajeError = true;
     }
   }

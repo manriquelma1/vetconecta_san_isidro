@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CitasService } from '../../services/citas-service';
 import { HistorialService } from '../../services/historial-service';
 
@@ -14,9 +14,8 @@ export class Historial {
 
   readonly mascotas = this.citasService.mascotas;
 
-  readonly mascotaSeleccionadaId = signal(
-    this.citasService.mascotas()[0]?.id ?? ''
-  );
+  // Las mascotas llegan por HTTP: vacio al construir, se elige la primera en el effect() de abajo.
+  readonly mascotaSeleccionadaId = signal('');
 
   readonly busqueda = signal('');
 
@@ -49,6 +48,26 @@ export class Historial {
       this.mascotaSeleccionadaId()
     )
   );
+
+  constructor() {
+    // Selecciona la primera mascota apenas la lista llega del backend.
+    effect(() => {
+      const [primeraMascota] = this.mascotas();
+
+      if (primeraMascota && !this.mascotaSeleccionadaId()) {
+        this.mascotaSeleccionadaId.set(primeraMascota.id);
+      }
+    });
+
+    // Pide el historial (vacunas + visitas) cada vez que cambia la mascota elegida.
+    effect(() => {
+      const id = this.mascotaSeleccionadaId();
+
+      if (id) {
+        this.historialService.cargarHistorial(id);
+      }
+    });
+  }
 
   seleccionarMascota(id: string): void {
     this.mascotaSeleccionadaId.set(id);

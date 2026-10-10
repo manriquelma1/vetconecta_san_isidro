@@ -161,7 +161,7 @@ export class Recetas {
     this.errorReceta.set('');
   }
 
-  protected guardarReceta(): void {
+  protected async guardarReceta(): Promise<void> {
     const mascotaId = this.fMascotaId();
     const veterinario = this.fVeterinario().trim();
     const fechaEmision = this.fEmision();
@@ -214,27 +214,32 @@ export class Recetas {
       return;
     }
 
-    const receta = this.recetasService.agregarReceta({
-      mascotaId,
-      veterinario,
-      fechaEmision,
-      fechaFin,
-      medicamentos: medicamentos.map((medicamento) => ({ ...medicamento, id: '' }))
-    });
+    try {
+      const receta = await this.recetasService.agregarReceta({
+        mascotaId,
+        veterinario,
+        fechaEmision,
+        fechaFin,
+        medicamentos: medicamentos.map((medicamento) => ({ ...medicamento, id: '' }))
+      });
 
-    if (!receta) {
-      this.errorReceta.set('Solo el personal veterinario puede emitir recetas.');
-      return;
+      this.mostrarForm.set(false);
+      this.busqueda.set('');
+      this.aviso.set(`Receta emitida para ${this.nombreMascota(receta.mascotaId)}.`);
+    } catch (error) {
+      this.errorReceta.set(
+        error instanceof Error ? error.message : 'Solo el personal veterinario puede emitir recetas.'
+      );
     }
-
-    this.mostrarForm.set(false);
-    this.busqueda.set('');
-    this.aviso.set(`Receta emitida para ${this.nombreMascota(receta.mascotaId)}.`);
   }
 
-  protected eliminarReceta(id: string): void {
-    this.recetasService.eliminarReceta(id);
-    this.aviso.set('La receta se eliminó.');
+  protected async eliminarReceta(id: string): Promise<void> {
+    try {
+      await this.recetasService.eliminarReceta(id);
+      this.aviso.set('La receta se eliminó.');
+    } catch (error) {
+      this.aviso.set(error instanceof Error ? error.message : 'No se pudo eliminar la receta.');
+    }
   }
 
   protected formatearFecha(fecha: string): string {

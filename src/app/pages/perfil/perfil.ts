@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth-service';
 import { CitasService } from '../../services/citas-service';
@@ -20,9 +20,9 @@ export class Perfil {
   protected readonly nombreRol = this.auth.nombreRol;
   protected readonly mascotas = this.citasService.mascotas;
 
-  protected readonly mascotaSeleccionadaId = signal(
-    this.citasService.mascotas()[0]?.id ?? ''
-  );
+  // Las mascotas llegan por HTTP (vacio al construir); se selecciona la primera
+  // en el effect() de abajo apenas la lista tenga datos.
+  protected readonly mascotaSeleccionadaId = signal('');
 
   protected readonly nombre = signal('');
   protected readonly especie = signal('');
@@ -39,11 +39,16 @@ export class Perfil {
   } | null>(null);
 
   constructor() {
-    const primeraMascota = this.citasService.mascotas()[0];
+    // Selecciona la primera mascota apenas la lista llega del backend,
+    // pero solo si el usuario no eligio otra ni esta creando una nueva.
+    effect(() => {
+      const [primeraMascota] = this.mascotas();
 
-    if (primeraMascota) {
-      this.cargarMascota(primeraMascota);
-    }
+      if (primeraMascota && !this.mascotaSeleccionadaId() && !this.nuevaMascota()) {
+        this.mascotaSeleccionadaId.set(primeraMascota.id);
+        this.cargarMascota(primeraMascota);
+      }
+    });
   }
 
   protected seleccionarMascota(id: string): void {
@@ -103,7 +108,7 @@ export class Perfil {
     this.mensaje.set(null);
   }
 
-  protected guardarFicha(): void {
+  protected async guardarFicha(): Promise<void> {
     const nombre = this.nombre().trim();
     const especie = this.especie().trim();
     const raza = this.raza().trim();
@@ -159,50 +164,57 @@ export class Perfil {
       return;
     }
 
-    if (this.nuevaMascota()) {
-      const mascota = this.citasService.agregarMascota(
-        nombre,
-        especie,
-        raza,
-        edad,
-        peso,
-        alergias || 'Ninguna'
-      );
+    try {
+      if (this.nuevaMascota()) {
+        const mascota = await this.citasService.agregarMascota(
+          nombre,
+          especie,
+          raza,
+          edad,
+          peso,
+          alergias || 'Ninguna'
+        );
 
-      this.mascotaSeleccionadaId.set(mascota.id);
-      this.cargarMascota(mascota);
-      this.nuevaMascota.set(false);
+        this.mascotaSeleccionadaId.set(mascota.id);
+        this.cargarMascota(mascota);
+        this.nuevaMascota.set(false);
 
-      this.mensaje.set({
-        texto: 'Mascota registrada correctamente.',
-        error: false
-      });
-    } else {
-      const id = this.mascotaSeleccionadaId();
+        this.mensaje.set({
+          texto: 'Mascota registrada correctamente.',
+          error: false
+        });
+      } else {
+        const id = this.mascotaSeleccionadaId();
 
-      this.citasService.actualizarMascota(id, {
-        nombre,
-        especie,
-        raza,
-        edad,
-        peso,
-        alergias: alergias || 'Ninguna'
-      });
+        await this.citasService.actualizarMascota(id, {
+          nombre,
+          especie,
+          raza,
+          edad,
+          peso,
+          alergias: alergias || 'Ninguna'
+        });
 
-      const mascotaActualizada =
-        this.citasService.obtenerMascota(id);
+        const mascotaActualizada =
+          this.citasService.obtenerMascota(id);
 
-      if (mascotaActualizada) {
-        this.cargarMascota(mascotaActualizada);
+        if (mascotaActualizada) {
+          this.cargarMascota(mascotaActualizada);
+        }
+
+        this.mensaje.set({
+          texto: 'Ficha actualizada correctamente.',
+          error: false
+        });
       }
 
+      this.editando.set(false);
+    } catch (error) {
       this.mensaje.set({
-        texto: 'Ficha actualizada correctamente.',
-        error: false
+        texto: error instanceof Error ? error.message : 'No se pudo guardar la ficha.',
+        error: true
       });
     }
-
-    this.editando.set(false);
   }
 
   protected cambiarNombre(evento: Event): void {

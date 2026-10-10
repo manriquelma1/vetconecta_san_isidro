@@ -5,6 +5,10 @@
   El registro se guardó correctamente en el historial de la mascota.
 </div>
 
+<div class="alert alert-danger" *ngIf="error">
+  {{ error }}
+</div>
+
 <form [formGroup]="form" (ngSubmit)="guardar()">
   <div class="mb-3">
     <label class="form-label">Mascota</label>

@@ -18,6 +18,7 @@ export class RegistroAtencion {
 
   readonly mascotas = this.citasService.mascotas;
   guardado = false;
+  error = '';
 
   form = this.fb.group({
     mascotaId: ['', Validators.required],
@@ -30,14 +31,20 @@ export class RegistroAtencion {
     veterinario: ['', Validators.required],
   });
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
-    this.historialService.agregarVisita(this.form.getRawValue() as any);
-    this.guardado = true;
-    this.form.reset();
+
+    this.error = '';
+
+    try {
+      await this.historialService.agregarVisita(this.form.getRawValue() as any);
+      this.guardado = true;
+      this.form.reset();
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : 'No se pudo guardar el registro.';
+    }
   }
 }
-

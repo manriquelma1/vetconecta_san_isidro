@@ -39,7 +39,7 @@ export class GestionCitas {
     this.mensaje.set(null);
   }
 
-  protected cambiarEstado(cita: Cita, evento: Event): void {
+  protected async cambiarEstado(cita: Cita, evento: Event): Promise<void> {
     const selector = evento.target as HTMLSelectElement;
     const estado = selector.value as EstadoCita;
     if (estado === cita.estado) return;
@@ -50,7 +50,7 @@ export class GestionCitas {
       return;
     }
 
-    const error = this.citasService.cambiarEstado(cita.id, estado);
+    const error = await this.citasService.cambiarEstado(cita.id, estado);
     if (error) {
       selector.value = cita.estado;
       this.mensaje.set({ texto: error, error: true });

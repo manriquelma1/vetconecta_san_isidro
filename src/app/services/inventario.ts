@@ -1,79 +1,45 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { Producto } from '../models/producto';
+import { extraerMensajeError } from '../utils/http-error';
+import { environment } from '../../environments/environment';
 
+/** Solo personal de farmacia (HU-10): el backend ya rechaza todo esto a un propietario. */
 @Injectable({
   providedIn: 'root'
 })
 export class Inventario {
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl;
 
-  private productos: Producto[] = [
-    {
-      id: 1,
-      nombre: 'NexGard Spectra',
-      categoria: 'Farmacia',
-      precio: 65.00,
-      stock: 12,
-      stockMinimo: 5
-    },
-    {
-      id: 2,
-      nombre: 'Shampoo medicado Oti-Soothe',
-      categoria: 'Pet Shop',
-      precio: 42.90,
-      stock: 8,
-      stockMinimo: 3
-    },
-    {
-      id: 3,
-      nombre: 'Royal Canin Gastrointestinal',
-      categoria: 'Pet Shop',
-      precio: 89.90,
-      stock: 3,
-      stockMinimo: 5
-    },
-    {
-      id: 4,
-      nombre: 'Amoxicilina 500 mg',
-      categoria: 'Farmacia',
-      precio: 35.50,
-      stock: 10,
-      stockMinimo: 4
-    },
-    {
-      id: 5,
-      nombre: 'Meloxicam suspensión',
-      categoria: 'Farmacia',
-      precio: 28.00,
-      stock: 2,
-      stockMinimo: 3
+  async obtenerProductos(): Promise<Producto[]> {
+    try {
+      return await firstValueFrom(this.http.get<Producto[]>(`${this.apiUrl}/productos`));
+    } catch {
+      return [];
     }
-  ];
-
-  obtenerProductos(): Producto[] {
-    return this.productos;
   }
 
-  buscarProductos(texto: string): Producto[] {
-    const termino = texto.trim().toLowerCase();
-
-    if (!termino) {
-      return this.productos;
+  async buscarProductos(texto: string): Promise<Producto[]> {
+    try {
+      return await firstValueFrom(
+        this.http.get<Producto[]>(`${this.apiUrl}/productos`, { params: { texto } })
+      );
+    } catch {
+      return [];
     }
-
-    return this.productos.filter(producto =>
-      producto.nombre.toLowerCase().includes(termino)
-    );
   }
 
-  venderProducto(id: number, cantidad: number = 1): boolean {
-    const producto = this.productos.find(item => item.id === id);
-
-    if (!producto || cantidad <= 0 || producto.stock < cantidad) {
-      return false;
+  /** Lanza un Error con el mensaje del backend si no hay stock (o no hay permiso). */
+  async venderProducto(id: string, cantidad = 1): Promise<Producto> {
+    try {
+      return await firstValueFrom(
+        this.http.post<Producto>(`${this.apiUrl}/productos/${id}/vender`, cantidad)
+      );
+    } catch (error) {
+      throw new Error(extraerMensajeError(error));
     }
-
-    producto.stock -= cantidad;
-    return true;
   }
 
   tieneStockBajo(producto: Producto): boolean {

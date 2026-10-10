@@ -1,99 +1,90 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { Vacuna, VisitaMedica } from '../models/historial-medico';
-import { crearId, guardar, leer } from '../utils/almacenamiento';
+import { extraerMensajeError } from '../utils/http-error';
+import { environment } from '../../environments/environment';
 
-const CLAVE_VACUNAS = 'vetconecta.vacunas';
-const CLAVE_VISITAS = 'vetconecta.visitas';
+interface HistorialMascota {
+  vacunas: Vacuna[];
+  visitas: VisitaMedica[];
+}
 
-const VACUNAS_INICIALES: Vacuna[] = [
-  {
-    id: 'vacuna-1',
-    mascotaId: 'colita',
-    nombre: 'Séxtuple canina',
-    fechaAplicacion: '2026-03-12',
-    proximaDosis: '2027-03-12',
-    estado: 'Al día'
-  },
-  {
-    id: 'vacuna-2',
-    mascotaId: 'colita',
-    nombre: 'Antirrábica',
-    fechaAplicacion: '2026-04-05',
-    proximaDosis: '2027-04-05',
-    estado: 'Al día'
-  },
-  {
-    id: 'vacuna-3',
-    mascotaId: 'colita',
-    nombre: 'Bordetella',
-    fechaAplicacion: '2025-05-10',
-    proximaDosis: '2026-05-10',
-    estado: 'Vencida'
-  }
-];
+type DatosNuevaVisita = Omit<VisitaMedica, 'id'>;
 
-const VISITAS_INICIALES: VisitaMedica[] = [
-  {
-    id: 'visita-1',
-    mascotaId: 'colita',
-    fecha: '2026-03-14',
-    hora: '10:30',
-    motivo: 'Revisión por tos crónica',
-    descripcion: 'Paciente presenta tos seca desde hace 3 días. Se realiza evaluación clínica.',
-    diagnostico: 'Traqueobronquitis leve',
-        tratamiento: 'Broncodilatador y reposo por 5 días',
-    veterinario: 'Dr. Alejandro Gómez'
-  }
-];
-
+/**
+ * A diferencia de CitasService/RecetasService, aqui no hay una carga inicial
+ * de "todo": el backend expone el historial de UNA mascota a la vez
+ * (GET /api/historial/mascota/:id), igual que vacunasDeMascota()/visitasDeMascota()
+ * operaban sobre una mascota en la version con localStorage.
+ */
 @Injectable({ providedIn: 'root' })
 export class HistorialService {
-  private readonly _vacunas = signal<Vacuna[]>(
-    leer<Vacuna[]>(CLAVE_VACUNAS, VACUNAS_INICIALES)
-  );
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl;
 
-  private readonly _visitas = signal<VisitaMedica[]>(
-    leer<VisitaMedica[]>(CLAVE_VISITAS, VISITAS_INICIALES)
-  );
+  private readonly _vacunas = signal<Vacuna[]>([]);
+  private readonly _visitas = signal<VisitaMedica[]>([]);
+  private mascotaCargada = '';
 
   readonly vacunas = this._vacunas.asReadonly();
   readonly visitas = this._visitas.asReadonly();
 
+  async cargarHistorial(mascotaId: string): Promise<void> {
+    if (!mascotaId || this.mascotaCargada === mascotaId) {
+      return;
+    }
+
+    try {
+      const historial = await firstValueFrom(
+        this.http.get<HistorialMascota>(`${this.apiUrl}/historial/mascota/${mascotaId}`)
+      );
+
+      this._vacunas.set(historial.vacunas);
+      this._visitas.set(historial.visitas);
+      this.mascotaCargada = mascotaId;
+    } catch {
+      this._vacunas.set([]);
+      this._visitas.set([]);
+    }
+  }
+
+  /**
+   * Vacunas de TODAS las mascotas visibles (no solo la cargada con cargarHistorial).
+   * Lo usa el panel de recordatorios para listar refuerzos proximos.
+   */
+  async cargarTodasLasVacunas(): Promise<Vacuna[]> {
+    try {
+      return await firstValueFrom(this.http.get<Vacuna[]>(`${this.apiUrl}/historial/vacunas`));
+    } catch {
+      return [];
+    }
+  }
+
   vacunasDeMascota(mascotaId: string): Vacuna[] {
-    return this._vacunas().filter(
-      (vacuna) => vacuna.mascotaId === mascotaId
-    );
+    return this._vacunas().filter((vacuna) => vacuna.mascotaId === mascotaId);
   }
 
   visitasDeMascota(mascotaId: string): VisitaMedica[] {
     return this._visitas()
       .filter((visita) => visita.mascotaId === mascotaId)
-      .sort((a, b) =>
-        `${b.fecha}${b.hora}`.localeCompare(`${a.fecha}${a.hora}`)
+      .sort((a, b) => `${b.fecha}${b.hora}`.localeCompare(`${a.fecha}${a.hora}`));
+  }
+
+  /** Solo el personal veterinario registra una atencion (HU-08). */
+  async agregarVisita(datos: DatosNuevaVisita): Promise<VisitaMedica> {
+    try {
+      const visita = await firstValueFrom(
+        this.http.post<VisitaMedica>(`${this.apiUrl}/historial/visitas`, datos)
       );
-  }
 
-  agregarVacuna(datos: Omit<Vacuna, 'id'>): Vacuna {
-    const vacuna: Vacuna = {
-      ...datos,
-      id: crearId()
-    };
+      if (this.mascotaCargada === visita.mascotaId) {
+        this._visitas.update((lista) => [visita, ...lista]);
+      }
 
-    this._vacunas.update((lista) => [...lista, vacuna]);
-    guardar(CLAVE_VACUNAS, this._vacunas());
-
-    return vacuna;
-  }
-
-  agregarVisita(datos: Omit<VisitaMedica, 'id'>): VisitaMedica {
-    const visita: VisitaMedica = {
-      ...datos,
-      id: crearId()
-    };
-
-    this._visitas.update((lista) => [...lista, visita]);
-    guardar(CLAVE_VISITAS, this._visitas());
-
-    return visita;
+      return visita;
+    } catch (error) {
+      throw new Error(extraerMensajeError(error));
+    }
   }
 }

@@ -45,12 +45,12 @@
       <div>
         <h2>Productos disponibles</h2>
         <p class="texto-secundario">
-          {{ productos.length }} producto(s) encontrado(s)
+          {{ productos().length }} producto(s) encontrado(s)
         </p>
       </div>
     </div>
 
-    @if (productos.length > 0) {
+    @if (productos().length > 0) {
 
       <div class="tabla-contenedor">
         <table class="tabla-inventario">
@@ -66,7 +66,7 @@
           </thead>
 
           <tbody>
-            @for (producto of productos; track producto.id) {
+            @for (producto of productos(); track producto.id) {
               <tr>
                 <td>
                   <strong>{{ producto.nombre }}</strong>

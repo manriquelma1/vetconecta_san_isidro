@@ -1,94 +1,60 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { Receta } from '../models/receta';
-import { crearId, guardar, leer } from '../utils/almacenamiento';
+import { extraerMensajeError } from '../utils/http-error';
+import { environment } from '../../environments/environment';
 import { AuthService } from './auth-service';
 
-const CLAVE_RECETAS = 'vetconecta.recetas';
-
-const RECETAS_INICIALES: Receta[] = [
-  {
-    id: 'receta-1',
-    mascotaId: 'luna',
-    veterinario: 'Dr. Carlos Mendoza',
-    fechaEmision: '2026-09-18',
-    fechaFin: '2026-09-25',
-    medicamentos: [
-      {
-        id: 'med-1',
-        nombre: 'Amoxicilina 250mg',
-        dosis: '1 tableta cada 12 horas',
-        duracion: '7 días'
-      },
-      {
-        id: 'med-2',
-        nombre: 'Meloxicam suspensión',
-        dosis: '0.5 ml cada 24 horas',
-        duracion: '3 días'
-      }
-    ]
-  },
-  {
-    id: 'receta-2',
-    mascotaId: 'colita',
-    veterinario: 'Dra. Andrea Ruiz',
-    fechaEmision: '2026-09-10',
-    fechaFin: '2026-09-13',
-    medicamentos: [
-      {
-        id: 'med-3',
-        nombre: 'Meloxicam 2mg',
-        dosis: '0.5 ml cada 24 horas',
-        duracion: '3 días'
-      }
-    ]
-  }
-];
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class RecetasService {
+  private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
+  private readonly apiUrl = environment.apiUrl;
 
-  private readonly _recetas = signal<Receta[]>(
-    leer<Receta[]>(CLAVE_RECETAS, RECETAS_INICIALES)
-  );
+  private readonly _recetas = signal<Receta[]>([]);
 
   readonly recetas = this._recetas.asReadonly();
 
-  /**
-   * Emite una receta. Solo el personal veterinario puede recetar:
-   * devuelve null si quien tiene la sesion abierta no lo es.
-   */
-  agregarReceta(datos: Omit<Receta, 'id'>): Receta | null {
-    if (!this.auth.esPersonal()) {
-      return null;
-    }
-
-    const receta: Receta = {
-      ...datos,
-      id: crearId(),
-      medicamentos: datos.medicamentos.map((medicamento) => ({
-        ...medicamento,
-        id: crearId()
-      }))
-    };
-
-    this._recetas.update((lista) => [...lista, receta]);
-    guardar(CLAVE_RECETAS, this._recetas());
-
-    return receta;
+  constructor() {
+    effect(() => {
+      if (this.auth.autenticado()) {
+        this.cargarRecetas();
+      } else {
+        this._recetas.set([]);
+      }
+    });
   }
 
-  eliminarReceta(id: string): void {
-    if (!this.auth.esPersonal()) {
-      return;
+  async cargarRecetas(): Promise<void> {
+    try {
+      const recetas = await firstValueFrom(this.http.get<Receta[]>(`${this.apiUrl}/recetas`));
+      this._recetas.set(recetas);
+    } catch {
+      // Sin donde mostrar el error en este punto: el componente ya maneja su propio estado vacio.
     }
+  }
 
-    this._recetas.update((lista) =>
-      lista.filter((receta) => receta.id !== id)
-    );
+  /**
+   * Emite una receta. Solo el personal veterinario puede recetar:
+   * el backend responde 401 si quien tiene la sesion abierta no lo es.
+   */
+  async agregarReceta(datos: Omit<Receta, 'id'>): Promise<Receta> {
+    try {
+      const receta = await firstValueFrom(this.http.post<Receta>(`${this.apiUrl}/recetas`, datos));
+      this._recetas.update((lista) => [receta, ...lista]);
+      return receta;
+    } catch (error) {
+      throw new Error(extraerMensajeError(error));
+    }
+  }
 
-    guardar(CLAVE_RECETAS, this._recetas());
+  async eliminarReceta(id: string): Promise<void> {
+    try {
+      await firstValueFrom(this.http.delete(`${this.apiUrl}/recetas/${id}`));
+      this._recetas.update((lista) => lista.filter((receta) => receta.id !== id));
+    } catch (error) {
+      throw new Error(extraerMensajeError(error));
+    }
   }
 }

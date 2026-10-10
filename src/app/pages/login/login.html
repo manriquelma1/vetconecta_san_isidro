@@ -97,8 +97,8 @@
         </p>
       }
 
-      <button type="submit" class="btn btn-primary btn-bloque">
-        {{ modoRegistro() ? 'Crear cuenta' : 'Ingresar' }}
+      <button type="submit" class="btn btn-primary btn-bloque" [disabled]="cargando()">
+        {{ cargando() ? 'Un momento...' : (modoRegistro() ? 'Crear cuenta' : 'Ingresar') }}
       </button>
     </form>
 
@@ -110,6 +110,7 @@
       <button
         type="button"
         class="btn btn-secundario btn-bloque"
+        [disabled]="cargando()"
         (click)="ingresarConGoogle()"
       >
         <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true" focusable="false">

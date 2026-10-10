@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CitasService } from '../../services/citas-service';
 import { HistorialService } from '../../services/historial-service';
+import { Vacuna } from '../../models/historial-medico';
 import { fechaLegible } from '../../utils/fecha';
 
 @Component({
@@ -14,6 +15,14 @@ export class Recordatorios {
   private readonly historialService = inject(HistorialService);
   protected readonly error = signal('');
 
+  // Las vacunas de todas las mascotas se piden una vez al entrar a la pagina
+  // (el backend ya no las tiene todas en memoria como en la version localStorage).
+  private readonly vacunas = signal<Vacuna[]>([]);
+
+  constructor() {
+    this.historialService.cargarTodasLasVacunas().then((vacunas) => this.vacunas.set(vacunas));
+  }
+
   protected readonly recordatorios = computed(() =>
     this.citasService
       .citasOrdenadas()
@@ -24,8 +33,7 @@ export class Recordatorios {
   );
 
   protected readonly refuerzos = computed(() =>
-    this.historialService
-      .vacunas()
+    this.vacunas()
       .filter((vacuna) => {
         const dias = this.diasHastaFecha(vacuna.proximaDosis);
         return dias <= 30;
@@ -99,9 +107,9 @@ export class Recordatorios {
     return this.diasHastaFecha(fecha) < 0;
   }
 
-  protected cancelar(id: string): void {
+  protected async cancelar(id: string): Promise<void> {
     if (!window.confirm('¿Cancelar esta cita?')) return;
-    this.error.set(this.citasService.cambiarEstado(id, 'Cancelada') ?? '');
+    this.error.set((await this.citasService.cambiarEstado(id, 'Cancelada')) ?? '');
   }
 
   private fechaHoraCita(fecha: string, hora: string): Date {

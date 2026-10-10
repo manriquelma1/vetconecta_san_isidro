@@ -1,5 +1,5 @@
 export interface Producto {
-  id: number;
+  id: string;
   nombre: string;
   categoria: 'Farmacia' | 'Pet Shop';
   precio: number;

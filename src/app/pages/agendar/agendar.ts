@@ -32,13 +32,17 @@ export class Agendar {
 
   private readonly hoy = aClave(new Date());
 
-  protected readonly mascotaId = signal(this.citasService.mascotas()[0]?.id ?? '');
+  // Las mascotas llegan por HTTP: vacio al construir, se elige la primera en el effect() de abajo.
+  protected readonly mascotaId = signal('');
   protected readonly servicio = signal(SERVICIOS[0]);
   protected readonly fecha = signal(this.hoy);
   protected readonly hora = signal('');
   protected readonly motivoConsulta = signal('');
   protected readonly mesVisible = signal(new Date());
   protected readonly busquedaMascota = signal('');
+
+  /** Horarios ocupados de `fecha()`, consultados al backend (no son calculables en el cliente). */
+  private readonly horasOcupadas = signal<string[]>([]);
 
   // --- Ficha de la mascota nueva (mismos campos que Perfil) ---
   protected readonly mostrarFormMascota = signal(false);
@@ -68,6 +72,27 @@ export class Agendar {
       } else if (dialogo.open) {
         dialogo.close();
       }
+    });
+
+    // Selecciona la primera mascota apenas la lista llega del backend.
+    effect(() => {
+      const [primeraMascota] = this.mascotas();
+
+      if (primeraMascota && !this.mascotaId()) {
+        this.mascotaId.set(primeraMascota.id);
+      }
+    });
+
+    // Cada vez que cambia la fecha elegida, vuelve a preguntar que horas estan ocupadas.
+    effect(() => {
+      const fecha = this.fecha();
+
+      this.citasService.horasOcupadas(fecha).then((horas) => {
+        // Evita una respuesta tardia de una fecha que ya no es la seleccionada.
+        if (this.fecha() === fecha) {
+          this.horasOcupadas.set(horas);
+        }
+      });
     });
   }
 
@@ -137,7 +162,7 @@ export class Agendar {
   });
 
   protected readonly horarios = computed(() => {
-    const ocupadas = this.citasService.horasOcupadas(this.fecha());
+    const ocupadas = this.horasOcupadas();
 
     return HORARIOS.map((hora) => ({
       hora,
@@ -219,7 +244,7 @@ export class Agendar {
     );
   }
 
-  protected guardarMascota(): void {
+  protected async guardarMascota(): Promise<void> {
     const nombre = this.nombre().trim();
     const especie = this.especie().trim();
     const raza = this.raza().trim();
@@ -252,26 +277,30 @@ export class Agendar {
       return;
     }
 
-    const mascota = this.citasService.agregarMascota(
-      nombre,
-      especie,
-      raza,
-      edad,
-      peso,
-      alergias || 'Ninguna'
-    );
+    try {
+      const mascota = await this.citasService.agregarMascota(
+        nombre,
+        especie,
+        raza,
+        edad,
+        peso,
+        alergias || 'Ninguna'
+      );
 
-    this.mascotaId.set(mascota.id);
-    this.busquedaMascota.set('');
-    this.mostrarFormMascota.set(false);
+      this.mascotaId.set(mascota.id);
+      this.busquedaMascota.set('');
+      this.mostrarFormMascota.set(false);
 
-    this.mensaje.set({
-      texto: `${mascota.nombre} se agregó a tus mascotas.`,
-      error: false
-    });
+      this.mensaje.set({
+        texto: `${mascota.nombre} se agregó a tus mascotas.`,
+        error: false
+      });
+    } catch (error) {
+      this.errorMascota.set(error instanceof Error ? error.message : 'No se pudo registrar la mascota.');
+    }
   }
 
-  protected confirmar(): void {
+  protected async confirmar(): Promise<void> {
     const mascota = this.mascotas().find(
       (m) => m.id === this.mascotaId()
     );
@@ -300,33 +329,36 @@ export class Agendar {
       return;
     }
 
-    const cita = this.citasService.agregarCita({
-      mascotaId: mascota.id,
-      mascotaNombre: mascota.nombre,
-      servicio: this.servicio(),
-      motivoConsulta: this.motivoConsulta().trim(),
-      fecha: this.fecha(),
-      hora: this.hora(),
-      estado: 'Pendiente'
-    });
+    try {
+      await this.citasService.agregarCita({
+        mascotaId: mascota.id,
+        mascotaNombre: mascota.nombre,
+        servicio: this.servicio(),
+        motivoConsulta: this.motivoConsulta().trim(),
+        fecha: this.fecha(),
+        hora: this.hora()
+      });
 
-    if (!cita) {
-      this.mensaje.set({ texto: 'No se pudo reservar. Revisa la sesión y el horario disponible.', error: true });
-      return;
+      this.mensaje.set({
+        texto: `Cita registrada para ${mascota.nombre} el ${this.fechaLegible(this.fecha())} a las ${this.hora()}.`,
+        error: false
+      });
+
+      // El horario que acaba de reservarse ya no esta libre: refresca la grilla.
+      this.horasOcupadas.update((lista) => [...lista, this.hora()]);
+      this.hora.set('');
+      this.motivoConsulta.set('');
+    } catch (error) {
+      this.mensaje.set({
+        texto: error instanceof Error ? error.message : 'No se pudo reservar. Revisa la sesión y el horario disponible.',
+        error: true
+      });
     }
-
-    this.mensaje.set({
-      texto: `Cita registrada para ${mascota.nombre} el ${this.fechaLegible(this.fecha())} a las ${this.hora()}.`,
-      error: false
-    });
-
-    this.hora.set('');
-    this.motivoConsulta.set('');
   }
 
-  protected cancelar(cita: Cita): void {
+  protected async cancelar(cita: Cita): Promise<void> {
     if (!window.confirm(`¿Cancelar la cita de ${cita.mascotaNombre}?`)) return;
-    const error = this.citasService.cambiarEstado(cita.id, 'Cancelada');
+    const error = await this.citasService.cambiarEstado(cita.id, 'Cancelada');
     if (error) {
       this.mensaje.set({ texto: error, error: true });
       return;
